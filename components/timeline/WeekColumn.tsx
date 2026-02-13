@@ -32,7 +32,7 @@ export function WeekColumn({ weekIndex, operationType, events, isOverlay, onEdit
     const { isOver, setNodeRef } = useDroppable({
         id: droppableId,
         data: { weekIndex, operationType },
-        disabled: isLocked || (active && !isDropValid) // Disable dropping if locked or invalid
+        disabled: !!(isLocked || (active && !isDropValid)) // Disable dropping if locked or invalid
     });
 
     return (
