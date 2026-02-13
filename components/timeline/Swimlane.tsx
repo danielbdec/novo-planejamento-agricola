@@ -23,8 +23,8 @@ export function Swimlane({ operationType, events, visibleWeeks, onEdit }: Swimla
         'PULVERIZACAO_AEREA': Droplets,
         'ADUBACAO_FOLIAR': Tractor,
         'FERTIRRIGACAO': Droplets,
-        'PLANTIO_XINGU': Sprout,
-        'COBERTURA_MP_AGRO': Tractor,
+        'PLANTIO_MECANIZADO': Sprout,
+        'COBERTURA_SOLIDA': Tractor,
         'INTERVENCAO_MANUAL': Hand,
     };
     const Icon = icons[operationType] || Tractor;

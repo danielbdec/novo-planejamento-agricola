@@ -50,7 +50,7 @@ export const MOCK_EVENTS: OperationalEvent[] = [
     {
         id: 'evt-001',
         weekIndex: 2, // S03
-        operationType: 'PLANTIO_XINGU',
+        operationType: 'PLANTIO_MECANIZADO',
         status: 'EXECUTADO',
         area: 1200,
         protocols: [
@@ -59,7 +59,7 @@ export const MOCK_EVENTS: OperationalEvent[] = [
                 name: 'Plantio Soja Xingu',
                 target: 'Estabelecimento',
                 category: 'OUTROS',
-                operationType: 'PLANTIO_XINGU',
+                operationType: 'PLANTIO_MECANIZADO',
                 requiresMIP: false,
                 phenologicalStage: 'Seme',
                 selectedPackageId: 'pkg-seed',
