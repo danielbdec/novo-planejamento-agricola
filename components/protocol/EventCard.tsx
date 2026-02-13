@@ -5,7 +5,7 @@ import { MergedEventCard } from './MergedEventCard';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { cn, formatCurrency } from '@/lib/utils';
-import { GripVertical, Eye, Plane, Tractor, Droplets, Sprout, Bug, Zap } from 'lucide-react';
+import { Plane, Tractor, Droplets, Sprout, Bug, Zap, Eye } from 'lucide-react';
 
 interface EventCardProps {
     event: OperationalEvent;
