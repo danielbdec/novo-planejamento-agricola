@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { cn, formatCurrency } from '@/lib/utils';
 import { Plane, Tractor, Droplets, Sprout, Bug, Zap, Eye } from 'lucide-react';
+import { getDAE, getStageForWeek, getPhaseColors } from '@/lib/phenology';
 
 interface EventCardProps {
     event: OperationalEvent;
@@ -71,9 +72,12 @@ export function EventCard({ event, onEdit }: EventCardProps) {
         }
     };
 
-    // DAE Calculation (Mock)
-    const dae = (event.weekIndex * 7) - 10;
-    const stageLabel = protocol.phenologicalStage || (dae < 0 ? 'Pré' : `V${Math.max(1, Math.floor(dae / 5))}`);
+    // DAE and Stage from centralized phenology
+    const dae = getDAE(event.weekIndex);
+    const stage = getStageForWeek(event.weekIndex);
+    const stageLabel = protocol.phenologicalStage || stage?.label || `V${Math.max(1, Math.floor(dae / 7))}`;
+    const phaseFull = stage?.fullLabel || '';
+    const phaseColors = stage ? getPhaseColors(stage.phase) : getPhaseColors('VEGETATIVA');
 
     return (
         <div ref={setDropRef} className="relative z-10">
@@ -95,6 +99,19 @@ export function EventCard({ event, onEdit }: EventCardProps) {
                         if (onEdit) onEdit(event);
                     }}
                 >
+                    {/* DAE Indicator Strip */}
+                    <div className={cn(
+                        "flex items-center gap-2 -mx-3 -mt-3 mb-2 px-3 py-1 rounded-t-lg text-[10px] font-mono border-b",
+                        stage?.phase === 'REPRODUTIVA'
+                            ? "bg-amber-500/5 border-amber-500/10 text-amber-400/80"
+                            : "bg-green-500/5 border-green-500/10 text-green-400/80"
+                    )}>
+                        <span className="font-bold">DAE {dae > 0 ? dae : '—'}</span>
+                        <span className="text-slate-600">|</span>
+                        <span className={cn("font-semibold", phaseColors.text)}>{stageLabel}</span>
+                        {phaseFull && <span className="text-slate-600 hidden sm:inline">· {phaseFull}</span>}
+                    </div>
+
                     {/* Header: Categoria e Ícone */}
                     <div className="flex justify-between items-center mb-1.5">
                         <Badge

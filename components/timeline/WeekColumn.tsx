@@ -5,6 +5,7 @@ import { EventCard } from '@/components/protocol/EventCard';
 import { cn } from '@/lib/utils';
 import { Lock, Ban } from 'lucide-react';
 import { isOperationCompatible } from '@/lib/validation';
+import { getStageForWeek, getPhaseColors } from '@/lib/phenology';
 
 interface WeekColumnProps {
     weekIndex: number;
@@ -18,31 +19,35 @@ interface WeekColumnProps {
 export function WeekColumn({ weekIndex, operationType, events, isOverlay, onEdit, isLocked }: WeekColumnProps) {
     const { active } = useDndContext();
 
-    // Verificar Validade do Drop
     const isDropValid = React.useMemo(() => {
         if (!active || !active.data.current) return false;
         const sourceEvent = active.data.current.event as OperationalEvent;
-        // Pega a operação original do evento sendo arrastado
-        // A lógica do user diz: "Arrastar fungicida para plantio deve dar erro"
-        // Nossa função isOperationCompatible compara Source OP vs Target OP
         return isOperationCompatible(sourceEvent.operationType, operationType);
     }, [active, operationType]);
 
-    const droppableId = `week-${weekIndex}-${operationType}`; // Unique ID for drop zone
+    const droppableId = `week-${weekIndex}-${operationType}`;
     const { isOver, setNodeRef } = useDroppable({
         id: droppableId,
         data: { weekIndex, operationType },
-        disabled: !!(isLocked || (active && !isDropValid)) // Disable dropping if locked or invalid
+        disabled: !!(isLocked || (active && !isDropValid))
     });
+
+    // Phenological phase color for vertical indicator
+    const stage = getStageForWeek(weekIndex);
+    const phaseColors = stage ? getPhaseColors(stage.phase) : null;
 
     return (
         <div
             ref={setNodeRef}
             className={cn(
                 "min-h-[120px] p-2 border-r border-border/20 transition-colors relative",
+                // Vertical phase indicator (left border)
+                phaseColors && stage?.phase === 'REPRODUTIVA'
+                    ? "border-l-2 border-l-amber-500/20"
+                    : "border-l-2 border-l-green-500/10",
                 // Valid Drop Styling
                 isOver && !isLocked && isDropValid && "bg-agri-green-500/10 border-agri-green-500/50",
-                // Invalid Drop Styling (Over but Invalid)
+                // Invalid Drop Styling
                 isOver && !isLocked && !isDropValid && "bg-red-500/10 border-red-500/50 cursor-not-allowed",
                 // Locked styling
                 isLocked && "bg-slate-950/40 border-slate-800/50 cursor-not-allowed",

@@ -17,9 +17,10 @@ import { usePlanning } from '@/context/PlanningContext';
 import { Swimlane } from './Swimlane';
 import { OperationType, OperationalEvent } from '@/lib/types';
 import { EventCard } from '@/components/protocol/EventCard';
-import { ChevronLeft, ChevronRight, Calendar, Tractor, ChevronDown, MapPin, Sprout } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Calendar, Tractor, ChevronDown, MapPin, Sprout, Flower2, Wheat } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
+import { getStageForWeek, isFirstWeekOfStage, getPhaseColors } from '@/lib/phenology';
 
 const OPERATIONS: OperationType[] = [
     'PULVERIZACAO_TERRESTRE', // Maior volume
@@ -164,37 +165,7 @@ export function Timeline() {
                 editEvent={editingEvent}
             />
 
-            {/* Régua Fenológica (Estádios da Soja) */}
-            <div className="relative h-8 mb-2 flex items-center px-12 border-b border-white/5 bg-slate-950/30 backdrop-blur-sm">
-                <div className="absolute inset-x-0 top-1/2 h-px bg-white/10"></div>
-                {/* Mock Stages - Em produção, calcular baseado na data de plantio */}
-                {[
-                    { label: 'V1', week: 0, color: 'text-green-400' },
-                    { label: 'V4', week: 2, color: 'text-green-500' },
-                    { label: 'R1 (Início Floração)', week: 5, color: 'text-yellow-400' },
-                    { label: 'R5.1 (Enchimento)', week: 8, color: 'text-orange-400' },
-                ].map((stage, idx) => {
-                    // Calcular posição baseado na semana visível
-                    const isVisible = stage.week >= startWeek && stage.week < startWeek + weeksToShow;
-                    if (!isVisible) return null;
 
-                    // Calcular offset (0 a 100% da largura visível)
-                    const offsetPct = ((stage.week - startWeek) / weeksToShow) * 100;
-
-                    return (
-                        <div
-                            key={idx}
-                            className="absolute transform -translate-x-1/2 flex flex-col items-center group cursor-pointer"
-                            style={{ left: `calc(${offsetPct}% + 50px)` }} // Ajuste fino para alinhar com colunas
-                        >
-                            <div className={`w-3 h-3 rounded-full border-2 border-slate-900 ${stage.color.replace('text', 'bg')} z-10 shadow-lg group-hover:scale-125 transition-transform`}></div>
-                            <span className={`text-[10px] font-bold ${stage.color} mt-1 opacity-70 group-hover:opacity-100 transition-opacity whitespace-nowrap bg-slate-900/80 px-1 rounded`}>
-                                {stage.label}
-                            </span>
-                        </div>
-                    )
-                })}
-            </div>
 
             {/* Timeline Header Navigation */}
             <div className="flex items-center justify-between glass-panel p-4 rounded-xl sticky top-0 z-40 mb-2">
@@ -283,6 +254,49 @@ export function Timeline() {
                         </span>
                     </div>
                 ))}
+            </div>
+
+            {/* Régua Fenológica — Alinhada com colunas, entre header e swimlanes */}
+            <div className="grid grid-cols-6 gap-0 pl-1 pr-2 mb-1">
+                {visibleWeekIndices.map((weekIdx) => {
+                    const stage = getStageForWeek(weekIdx);
+                    const isFirst = isFirstWeekOfStage(weekIdx);
+                    const phase = stage?.phase || 'VEGETATIVA';
+                    const colors = getPhaseColors(phase);
+
+                    const StageIcon = phase === 'VEGETATIVA'
+                        ? (stage?.label === 'VE' ? Sprout : Sprout)
+                        : (stage?.label.startsWith('R5') || stage?.label === 'R7' || stage?.label === 'R8' ? Wheat : Flower2);
+
+                    return (
+                        <div
+                            key={weekIdx}
+                            className={cn(
+                                "flex items-center justify-center gap-1.5 py-1.5 mx-1 rounded-md border transition-all",
+                                isFirst
+                                    ? `${colors.bgLight} ${colors.border} border-solid`
+                                    : "border-transparent bg-transparent",
+                            )}
+                        >
+                            {stage && (
+                                <>
+                                    <StageIcon size={12} className={cn(colors.text, !isFirst && "opacity-30")} />
+                                    <span className={cn(
+                                        "text-[10px] font-bold tracking-wide",
+                                        isFirst ? colors.text : "text-slate-600",
+                                    )}>
+                                        {stage.label}
+                                    </span>
+                                    {isFirst && stage.fullLabel && (
+                                        <span className="text-[9px] text-slate-500 hidden xl:inline truncate max-w-[60px]" title={stage.fullLabel}>
+                                            {stage.fullLabel}
+                                        </span>
+                                    )}
+                                </>
+                            )}
+                        </div>
+                    );
+                })}
             </div>
 
             <DndContext
