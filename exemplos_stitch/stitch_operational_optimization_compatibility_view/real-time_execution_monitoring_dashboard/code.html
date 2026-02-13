@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Real-Time Execution Monitoring Dashboard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#0df26c",
+                        "background-light": "#f5f8f7",
+                        "background-dark": "#102217",
+                    },
+                    fontFamily: {
+                        "display": ["Inter"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; }
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(13, 242, 108, 0.2); border-radius: 10px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: rgba(13, 242, 108, 0.5); }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 font-display transition-colors duration-300">
+<div class="flex h-screen overflow-hidden">
+<aside class="w-20 lg:w-64 border-r border-primary/10 bg-background-light dark:bg-background-dark flex flex-col items-center lg:items-start p-4 space-y-8">
+<div class="flex items-center space-x-3 px-2">
+<div class="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
+<span class="material-icons text-background-dark font-bold">agriculture</span>
+</div>
+<span class="hidden lg:block text-xl font-bold tracking-tight text-primary">AGRO<span class="text-white">CORE</span></span>
+</div>
+<nav class="flex-1 w-full space-y-1">
+<a class="flex items-center space-x-3 p-3 rounded-lg bg-primary/10 text-primary border-r-4 border-primary" href="#">
+<span class="material-icons">dashboard</span>
+<span class="hidden lg:block font-medium">Monitoring</span>
+</a>
+<a class="flex items-center space-x-3 p-3 rounded-lg text-slate-500 hover:bg-primary/5 hover:text-primary transition-all" href="#">
+<span class="material-icons">map</span>
+<span class="hidden lg:block font-medium">Field Map</span>
+</a>
+<a class="flex items-center space-x-3 p-3 rounded-lg text-slate-500 hover:bg-primary/5 hover:text-primary transition-all" href="#">
+<span class="material-icons">inventory_2</span>
+<span class="hidden lg:block font-medium">Resources</span>
+</a>
+<a class="flex items-center space-x-3 p-3 rounded-lg text-slate-500 hover:bg-primary/5 hover:text-primary transition-all" href="#">
+<span class="material-icons">groups</span>
+<span class="hidden lg:block font-medium">Teams</span>
+</a>
+<a class="flex items-center space-x-3 p-3 rounded-lg text-slate-500 hover:bg-primary/5 hover:text-primary transition-all" href="#">
+<span class="material-icons">analytics</span>
+<span class="hidden lg:block font-medium">Reports</span>
+</a>
+</nav>
+<div class="w-full pt-4 border-t border-primary/10">
+<div class="flex items-center space-x-3 p-2">
+<img class="w-10 h-10 rounded-full object-cover" data-alt="Professional headshot of farm manager" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBswg9A2YbB2LHogCP1wcejkcqf8jb050cQXYt2kyHXVUuFS6v5PAF9smUcstQpN9zcSugY5sONndPhX4d2ub78buLFTAWv10U_lk0krJ8JtpNgGa4n9ZJPzUltT2yUXMmVu8OyDeYtefOezPk5Wdq4XLTtXaW_j6trTui9gq_nhv2VhRAiD2FDlcbsILxNUgPRVEdSNbNIqvM7q4v6I-jrc2XCYHNofsCm_thqNj7vLPvgMnMEd4Jr9fTUQp41fLUNsHZ1pCKdIwo"/>
+<div class="hidden lg:block overflow-hidden">
+<p class="text-sm font-semibold truncate">Ricardo Mendes</p>
+<p class="text-xs text-slate-500 truncate">Manager</p>
+</div>
+</div>
+</div>
+</aside>
+<main class="flex-1 overflow-y-auto custom-scrollbar flex flex-col">
+<header class="h-16 border-b border-primary/10 flex items-center justify-between px-8 bg-background-light/50 dark:bg-background-dark/50 backdrop-blur-md sticky top-0 z-10">
+<div class="flex items-center space-x-4">
+<h1 class="text-lg font-semibold">Real-Time Execution Monitoring</h1>
+<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-primary/20 text-primary border border-primary/30 uppercase tracking-wider">Live System</span>
+</div>
+<div class="flex items-center space-x-6">
+<div class="hidden md:flex flex-col items-end">
+<span class="text-xs text-slate-500">System Time</span>
+<span class="text-sm font-mono font-medium">14:45:22 GMT-3</span>
+</div>
+<div class="flex items-center space-x-2">
+<button class="p-2 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-primary/20 hover:text-primary transition-colors">
+<span class="material-icons text-xl">notifications</span>
+</button>
+<button class="p-2 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-primary/20 hover:text-primary transition-colors">
+<span class="material-icons text-xl">settings</span>
+</button>
+</div>
+</div>
+</header>
+<div class="p-8 space-y-8">
+<section class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+<div class="p-6 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm">
+<div class="flex justify-between items-start mb-4">
+<span class="text-slate-500 text-sm font-medium uppercase tracking-wider">Total Area Planned</span>
+<span class="material-icons text-primary/60">straighten</span>
+</div>
+<div class="flex items-end space-x-2">
+<span class="text-3xl font-bold">1,240</span>
+<span class="text-slate-500 text-sm mb-1">HA</span>
+</div>
+<div class="mt-4 h-1 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+<div class="h-full bg-primary" style="width: 100%"></div>
+</div>
+</div>
+<div class="p-6 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm">
+<div class="flex justify-between items-start mb-4">
+<span class="text-slate-500 text-sm font-medium uppercase tracking-wider">Total Area Applied</span>
+<span class="material-icons text-primary">check_circle</span>
+</div>
+<div class="flex items-end space-x-2">
+<span class="text-3xl font-bold">842</span>
+<span class="text-slate-500 text-sm mb-1">HA (68%)</span>
+</div>
+<div class="mt-4 h-1 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+<div class="h-full bg-primary shadow-[0_0_10px_rgba(13,242,108,0.5)]" style="width: 68%"></div>
+</div>
+</div>
+<div class="p-6 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm">
+<div class="flex justify-between items-start mb-4">
+<span class="text-slate-500 text-sm font-medium uppercase tracking-wider">Adherence to Budget</span>
+<span class="material-icons text-blue-500">trending_down</span>
+</div>
+<div class="flex items-end space-x-2">
+<span class="text-3xl font-bold text-blue-500">-2.4</span>
+<span class="text-slate-500 text-sm mb-1">% Deviation</span>
+</div>
+<p class="text-xs text-primary mt-4 flex items-center">
+<span class="material-icons text-xs mr-1">arrow_downward</span>
+                            Saving $4,200 vs baseline
+                        </p>
+</div>
+<div class="p-6 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm">
+<div class="flex justify-between items-start mb-4">
+<span class="text-slate-500 text-sm font-medium uppercase tracking-wider">Operational Health</span>
+<span class="material-icons text-yellow-500">bolt</span>
+</div>
+<div class="flex items-end space-x-2">
+<span class="text-3xl font-bold">94</span>
+<span class="text-slate-500 text-sm mb-1">/100 score</span>
+</div>
+<div class="flex space-x-1 mt-5">
+<div class="h-2 w-full bg-primary rounded-full"></div>
+<div class="h-2 w-full bg-primary rounded-full"></div>
+<div class="h-2 w-full bg-primary rounded-full"></div>
+<div class="h-2 w-full bg-yellow-500 rounded-full"></div>
+<div class="h-2 w-8 bg-slate-200 dark:bg-slate-800 rounded-full"></div>
+</div>
+</div>
+</section>
+<div class="grid grid-cols-1 xl:grid-cols-3 gap-8">
+<section class="xl:col-span-2 space-y-6">
+<div class="flex items-center justify-between">
+<h2 class="text-xl font-bold">Operational Events</h2>
+<div class="flex space-x-2">
+<button class="px-4 py-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-sm font-medium hover:bg-primary/20 transition-colors">Export CSV</button>
+<button class="px-4 py-2 rounded-lg bg-primary text-background-dark text-sm font-bold hover:opacity-90 transition-opacity">Schedule Event</button>
+</div>
+</div>
+<div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden shadow-sm">
+<table class="w-full text-left border-collapse">
+<thead class="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-800">
+<tr>
+<th class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-slate-500">Operational Event / Block</th>
+<th class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-slate-500">Status</th>
+<th class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-slate-500">Area Coverage</th>
+<th class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-slate-500">Assigned Team</th>
+<th class="px-6 py-4 text-xs font-bold uppercase tracking-wider text-slate-500">Cost Dev.</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+<tr class="hover:bg-slate-50 dark:hover:bg-primary/5 transition-colors">
+<td class="px-6 py-4">
+<p class="font-bold text-sm">Fertilization Block T-04</p>
+<p class="text-xs text-slate-500">ID: #OP-8821 | Nitrogen Mix</p>
+</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-primary/20 text-primary">
+<span class="w-1.5 h-1.5 rounded-full bg-primary mr-2 animate-pulse"></span>
+                                                Executing
+                                            </span>
+</td>
+<td class="px-6 py-4 min-w-[160px]">
+<div class="flex items-center justify-between mb-1">
+<span class="text-[10px] font-bold">85%</span>
+<span class="text-[10px] text-slate-500">120/142 ha</span>
+</div>
+<div class="h-1.5 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+<div class="h-full bg-primary" style="width: 85%"></div>
+</div>
+</td>
+<td class="px-6 py-4">
+<div class="flex -space-x-2">
+<div class="relative group">
+<img class="w-8 h-8 rounded-full border-2 border-slate-900 object-cover" data-alt="Warehouse lead headshot" src="https://lh3.googleusercontent.com/aida-public/AB6AXuArbuu8hZvO9SK1oj5rBw8roZV8tXBzql56R3CzC5AwDbMlwstGZpA8qK1wxGh_bBdtOakeUC7TNNcOIQQUCraJTxqN0DgLRzHxOjUB12_LwBhKzeaUmrJzWT2HzGNdWW_iRZVGPaAwzlVGUE8L7vrwXGDuIO3brd6qMSnpQeZMwurOVuWgEUMvKDS2s5_2EmaoAayB4T1u4E3rII3iCdmoxuygmAOxoYFdfzGAbrF_UUnfRtWqlxHjDK6o4ETVDfk8R5Hp_Km7g0M"/>
+<span class="absolute -top-8 left-1/2 -translate-x-1/2 px-2 py-1 bg-slate-900 text-[10px] rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">Lead: Carlos W.</span>
+</div>
+<div class="relative group">
+<img class="w-8 h-8 rounded-full border-2 border-slate-900 object-cover" data-alt="Field operator headshot" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC2t4JW0EhqZXSAGvMARvtDNnefByjAAPZvI4KCAijr6DzIpT3yZHTg-zHRK9XoonXWVzfYV-zY-wGaT-IIaO672wWjQH8D9RqiCuvXSg3uCCc931s4zbRg4DBW_Te4Nov2yjKDwGR7e7Nn2ysK0hYjagr8fp3Bsr_uYSZreRo6nLWperbsYUoeiGGkTdIE8YgXCfIq55eD9peYD7mIZQ_j4SfLUN1t2OC5JWrD-VSs7KTcVY2LQQmYkoxf7jFeV9cSEbHCV3WriwE"/>
+<span class="absolute -top-8 left-1/2 -translate-x-1/2 px-2 py-1 bg-slate-900 text-[10px] rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">Op: Jonas M.</span>
+</div>
+</div>
+</td>
+<td class="px-6 py-4 font-mono text-xs font-bold text-primary">-$142.00</td>
+</tr>
+<tr class="hover:bg-slate-50 dark:hover:bg-primary/5 transition-colors">
+<td class="px-6 py-4">
+<p class="font-bold text-sm">Pest Control Block T-09</p>
+<p class="text-xs text-slate-500">ID: #OP-8825 | Fungicide A</p>
+</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-slate-100 dark:bg-slate-800 text-slate-400">
+<span class="w-1.5 h-1.5 rounded-full bg-slate-400 mr-2"></span>
+                                                Completed
+                                            </span>
+</td>
+<td class="px-6 py-4 min-w-[160px]">
+<div class="flex items-center justify-between mb-1">
+<span class="text-[10px] font-bold">100%</span>
+<span class="text-[10px] text-slate-500">55/55 ha</span>
+</div>
+<div class="h-1.5 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+<div class="h-full bg-primary" style="width: 100%"></div>
+</div>
+</td>
+<td class="px-6 py-4">
+<div class="flex -space-x-2">
+<img class="w-8 h-8 rounded-full border-2 border-slate-900 object-cover" data-alt="Warehouse lead headshot" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA4VVR6R_THJPxMcjQ7_XwnR_rYg3HGb-sOLwssgsihOob7m0yK5lpfiAuSLitFfrlU83syaYFqa-zpDKZj5rFaW4WZSqspXYNB9BlM7Qhh36Fg3339UL3hNRcp9cv6iLeqj0Y081FrJxxNZw4wqrGPLxJPP0Dx0cImjxYwZskk843ivoLLPnKLmEVVZc5gEHJXkyEwghX8XV3xNr_oYiQMWjnRLU6g6QAk0GqbGVG5XhN3FFceP7cUHAp7dmGjO1pdLy62GFOlktQ"/>
+<img class="w-8 h-8 rounded-full border-2 border-slate-900 object-cover" data-alt="Field operator headshot" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBjKzmG_-LSVAlvXs0H_tA8gQu3Cs5BoGsOUdVI0CRZzvcP2J6OjvIB4znEFDiEe4BWKzmprF5EqVbRrojZN1PE_xTE9NB7gmHPsPKIM7YWEGUoCueVPzdi8W6yYt5MIdWg9HXs0BrXm80eH9cKHlk6DDdMdKOLMpy88PydBwhqKMDxgdU9zqIkWL66JNiKH3rDaUuFEkTFTXwSuPdyFtQgIB1PuzS5rHitG0s2yu9lfPOjB3Wx7Ufr1JxR2SClEbiFsOVqrnwsV1I"/>
+</div>
+</td>
+<td class="px-6 py-4 font-mono text-xs font-bold text-slate-500">+$12.50</td>
+</tr>
+<tr class="hover:bg-slate-50 dark:hover:bg-primary/5 transition-colors">
+<td class="px-6 py-4">
+<p class="font-bold text-sm">Harvesting Block S-12</p>
+<p class="text-xs text-slate-500">ID: #OP-8830 | Soybeans</p>
+</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-yellow-500/20 text-yellow-500">
+<span class="w-1.5 h-1.5 rounded-full bg-yellow-500 mr-2"></span>
+                                                Delayed
+                                            </span>
+</td>
+<td class="px-6 py-4 min-w-[160px]">
+<div class="flex items-center justify-between mb-1">
+<span class="text-[10px] font-bold">12%</span>
+<span class="text-[10px] text-slate-500">25/210 ha</span>
+</div>
+<div class="h-1.5 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+<div class="h-full bg-yellow-500" style="width: 12%"></div>
+</div>
+</td>
+<td class="px-6 py-4">
+<div class="flex -space-x-2">
+<img class="w-8 h-8 rounded-full border-2 border-slate-900 object-cover" data-alt="Warehouse lead headshot" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAw4EUrsXEuRyB4HSDpkOwA-n1UVUk8vTX21Ta05ZaW-j1ydV4tQLfSIGRTT8suCjmnv1alojFBucJmGR4rN2yh3DOprO855TjYyEvlEeDOI1JDPQvHOgMdkAxqbXOJnzpGxPjs4v900a_Bef2O7ImUQFGRYk41YRJJ2ZXuYvkL2d3nxWKkXcKBZKZWnaq1RUWKNqdO3yva7UgoLM6I3QxYUhIT141g2_5R_lRtVvckoHpsqxdtwXHOepBcq1gaRHhOlbt5EeDp-jo"/>
+<div class="w-8 h-8 rounded-full border-2 border-slate-900 bg-slate-800 flex items-center justify-center text-[10px] font-bold text-slate-500">+3</div>
+</div>
+</td>
+<td class="px-6 py-4 font-mono text-xs font-bold text-red-500">+$1,140.00</td>
+</tr>
+<tr class="hover:bg-slate-50 dark:hover:bg-primary/5 transition-colors">
+<td class="px-6 py-4 border-b-0">
+<p class="font-bold text-sm">Seeding Block T-15</p>
+<p class="text-xs text-slate-500">ID: #OP-8842 | Corn Grade A</p>
+</td>
+<td class="px-6 py-4 border-b-0">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-primary/20 text-primary">
+<span class="w-1.5 h-1.5 rounded-full bg-primary mr-2 animate-pulse"></span>
+                                                Executing
+                                            </span>
+</td>
+<td class="px-6 py-4 min-w-[160px] border-b-0">
+<div class="flex items-center justify-between mb-1">
+<span class="text-[10px] font-bold">48%</span>
+<span class="text-[10px] text-slate-500">42/88 ha</span>
+</div>
+<div class="h-1.5 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+<div class="h-full bg-primary" style="width: 48%"></div>
+</div>
+</td>
+<td class="px-6 py-4 border-b-0">
+<div class="flex -space-x-2">
+<img class="w-8 h-8 rounded-full border-2 border-slate-900 object-cover" data-alt="Warehouse lead headshot" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDnaE8ALYV0_XVLfFU05E-2NJ4BZmbDKtB00MocgM_EqpSbTBvVokLMR54s92We_kqDy2FCCCeFxo-xpnF3jm58kUpKDF4xfmA8DlBfqbdvK-o16ccys1VzRe_ZCLjNVvVFYBISXFaNSHdASe-V_IAJfChsEvWZJ9fNGCY5n2uL2uaa7E3JYWTO9-990xyxS2jPEqBuNhKylSCWDGMyVLKVjPQrpelqf-DxEk_ooavMcdsqk1_EUecITrZtm2y26xovZJbBh9f4oOI"/>
+<img class="w-8 h-8 rounded-full border-2 border-slate-900 object-cover" data-alt="Field operator headshot" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAEVQxZ7qQxHAnZmohkfw9knADERSZqXiw43wRV83A-lWVkZRp6Am9gH5KPdQ3AFT6w05PIp6pnq68wJ1TanlQHWSqy_eN6Oao6BSh2U5mCe1bLr6fV22wfV8-X_ZXfz58QjMordAjtkJeyIbmWybc7sIekmKCb47FmJwBkRiwKoNR_mIFKVn4uHg3X87ShQWpI2Tk-4BZ5RNaNyKRhVel9r8jBNggRjIDKL7MqH1zg9CqvpfH6-ICZrfdAECMjrMI5w599HAz2F9c"/>
+</div>
+</td>
+<td class="px-6 py-4 font-mono text-xs font-bold text-primary border-b-0">-$5.00</td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<section class="space-y-6">
+<div class="flex items-center justify-between">
+<h2 class="text-xl font-bold">Field Spatial View</h2>
+<div class="flex space-x-1">
+<div class="flex items-center space-x-1 px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded text-[10px]">
+<div class="w-2 h-2 rounded-full bg-primary"></div>
+<span>Done</span>
+</div>
+<div class="flex items-center space-x-1 px-2 py-1 bg-slate-100 dark:bg-slate-800 rounded text-[10px]">
+<div class="w-2 h-2 rounded-full bg-yellow-500"></div>
+<span>Active</span>
+</div>
+</div>
+</div>
+<div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4 shadow-sm h-[calc(100%-4rem)] flex flex-col">
+<div class="grid grid-cols-5 gap-2 flex-1">
+<!-- Generated Grid Blocks -->
+<div class="aspect-square bg-primary rounded-lg flex items-center justify-center group relative cursor-pointer hover:scale-105 transition-transform">
+<span class="text-[10px] font-bold text-background-dark opacity-50">T-01</span>
+<div class="absolute -top-12 left-1/2 -translate-x-1/2 px-2 py-1 bg-slate-900 text-[10px] rounded opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity whitespace-nowrap z-20">Completed (100%)</div>
+</div>
+<div class="aspect-square bg-primary rounded-lg flex items-center justify-center group relative cursor-pointer hover:scale-105 transition-transform">
+<span class="text-[10px] font-bold text-background-dark opacity-50">T-02</span>
+</div>
+<div class="aspect-square bg-yellow-500 rounded-lg flex items-center justify-center group relative cursor-pointer hover:scale-105 transition-transform border-4 border-primary/20">
+<span class="text-[10px] font-bold text-background-dark opacity-50">T-03</span>
+</div>
+<div class="aspect-square bg-primary rounded-lg flex items-center justify-center group relative cursor-pointer hover:scale-105 transition-transform">
+<span class="text-[10px] font-bold text-background-dark opacity-50">T-04</span>
+</div>
+<div class="aspect-square bg-slate-100 dark:bg-slate-800 rounded-lg flex items-center justify-center group relative cursor-pointer hover:scale-105 transition-transform">
+<span class="text-[10px] font-bold text-slate-500">T-05</span>
+</div>
+<div class="aspect-square bg-primary rounded-lg flex items-center justify-center group relative cursor-pointer hover:scale-105 transition-transform">
+<span class="text-[10px] font-bold text-background-dark opacity-50">T-06</span>
+</div>
+<div class="aspect-square bg-slate-100 dark:bg-slate-800 rounded-lg flex items-center justify-center group relative cursor-pointer hover:scale-105 transition-transform">
+<span class="text-[10px] font-bold text-slate-500">T-07</span>
+</div>
+<div class="aspect-square bg-primary rounded-lg flex items-center justify-center group relative cursor-pointer hover:scale-105 transition-transform">
+<span class="text-[10px] font-bold text-background-dark opacity-50">T-08</span>
+</div>
+<div class="aspect-square bg-primary rounded-lg flex items-center justify-center group relative cursor-pointer hover:scale-105 transition-transform shadow-[inset_0_0_10px_rgba(13,242,108,0.5)]">
+<span class="text-[10px] font-bold text-background-dark opacity-50">T-09</span>
+</div>
+<div class="aspect-square bg-slate-100 dark:bg-slate-800 rounded-lg flex items-center justify-center group relative cursor-pointer hover:scale-105 transition-transform">
+<span class="text-[10px] font-bold text-slate-500">T-10</span>
+</div>
+<div class="aspect-square bg-yellow-500 rounded-lg flex items-center justify-center group relative cursor-pointer hover:scale-105 transition-transform">
+<span class="text-[10px] font-bold text-background-dark opacity-50">T-11</span>
+</div>
+<div class="aspect-square bg-yellow-500/50 rounded-lg border-2 border-dashed border-yellow-500/50 flex items-center justify-center group relative cursor-pointer hover:scale-105 transition-transform">
+<span class="text-[10px] font-bold text-yellow-500">T-12</span>
+</div>
+<div class="aspect-square bg-slate-100 dark:bg-slate-800 rounded-lg flex items-center justify-center group relative cursor-pointer hover:scale-105 transition-transform">
+<span class="text-[10px] font-bold text-slate-500">T-13</span>
+</div>
+<div class="aspect-square bg-slate-100 dark:bg-slate-800 rounded-lg flex items-center justify-center group relative cursor-pointer hover:scale-105 transition-transform">
+<span class="text-[10px] font-bold text-slate-500">T-14</span>
+</div>
+<div class="aspect-square bg-yellow-500 rounded-lg flex items-center justify-center group relative cursor-pointer hover:scale-105 transition-transform">
+<span class="text-[10px] font-bold text-background-dark opacity-50">T-15</span>
+</div>
+<div class="aspect-square bg-slate-100 dark:bg-slate-800 rounded-lg flex items-center justify-center group relative cursor-pointer hover:scale-105 transition-transform">
+<span class="text-[10px] font-bold text-slate-500">T-16</span>
+</div>
+<div class="aspect-square bg-slate-100 dark:bg-slate-800 rounded-lg flex items-center justify-center group relative cursor-pointer hover:scale-105 transition-transform">
+<span class="text-[10px] font-bold text-slate-500">T-17</span>
+</div>
+<div class="aspect-square bg-slate-100 dark:bg-slate-800 rounded-lg flex items-center justify-center group relative cursor-pointer hover:scale-105 transition-transform">
+<span class="text-[10px] font-bold text-slate-500">T-18</span>
+</div>
+<div class="aspect-square bg-slate-100 dark:bg-slate-800 rounded-lg flex items-center justify-center group relative cursor-pointer hover:scale-105 transition-transform">
+<span class="text-[10px] font-bold text-slate-500">T-19</span>
+</div>
+<div class="aspect-square bg-slate-100 dark:bg-slate-800 rounded-lg flex items-center justify-center group relative cursor-pointer hover:scale-105 transition-transform">
+<span class="text-[10px] font-bold text-slate-500">T-20</span>
+</div>
+</div>
+<div class="mt-6 pt-6 border-t border-slate-100 dark:border-slate-800">
+<h3 class="text-sm font-bold mb-4">Real-Time Connectivity</h3>
+<div class="space-y-3">
+<div class="flex items-center justify-between">
+<span class="text-xs text-slate-500">Telemetry Stream</span>
+<span class="text-xs font-bold text-primary">Stable (14ms)</span>
+</div>
+<div class="flex items-center justify-between">
+<span class="text-xs text-slate-500">GPS Satellites</span>
+<span class="text-xs font-bold">12 Connected</span>
+</div>
+<div class="flex items-center justify-between">
+<span class="text-xs text-slate-500">Gateway Uplink</span>
+<span class="text-xs font-bold">Encrypted</span>
+</div>
+</div>
+</div>
+</div>
+</section>
+</div>
+</div>
+<footer class="mt-auto p-8 border-t border-primary/10 bg-slate-50 dark:bg-slate-900/50">
+<div class="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0 text-slate-500 text-xs">
+<p>© 2024 AGROCORE Systems - Precision Operational Management Portal</p>
+<div class="flex space-x-6">
+<a class="hover:text-primary transition-colors" href="#">Documentation</a>
+<a class="hover:text-primary transition-colors" href="#">Support Center</a>
+<a class="hover:text-primary transition-colors" href="#">System Health</a>
+</div>
+</div>
+</footer>
+</main>
+</div>
+</body></html>

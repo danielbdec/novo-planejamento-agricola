@@ -1,0 +1,340 @@
+<html class="dark" lang="pt-br"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Pre-Programmed Execution &amp; Extra Complements - AgroPlanner</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#0df26c",
+                        "background-light": "#f5f8f7",
+                        "background-dark": "#0a1610",
+                        "card-bg": "#14261c",
+                        "border-muted": "#1e3326",
+                        "locked": "#3b82f6",
+                    },
+                    fontFamily: {
+                        "display": ["Inter"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style type="text/tailwindcss">
+        body { font-family: 'Inter', sans-serif; }
+        .grid-bg {
+            background-image: linear-gradient(to right, rgba(13, 242, 108, 0.03) 1px, transparent 1px),
+                              linear-gradient(to bottom, rgba(13, 242, 108, 0.03) 1px, transparent 1px);
+            background-size: 40px 40px;
+        }
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; height: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #1e3326; border-radius: 10px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #0df26c33; }
+        .status-step-active { @apply text-primary border-primary bg-primary/10; }
+        .status-step-inactive { @apply text-slate-500 border-border-muted bg-transparent; }
+        .timeline-locked { background: repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(13, 242, 108, 0.02) 10px, rgba(13, 242, 108, 0.02) 20px); }
+    </style>
+</head>
+<body class="bg-background-dark text-slate-100 font-display min-h-screen flex flex-col overflow-hidden">
+<header class="border-b border-border-muted bg-background-dark/80 backdrop-blur-md px-6 py-3 flex items-center justify-between z-30">
+<div class="flex items-center gap-4">
+<div class="bg-primary p-1.5 rounded-lg shadow-lg shadow-primary/20">
+<span class="material-icons-round text-background-dark font-bold">agriculture</span>
+</div>
+<div>
+<h1 class="text-base font-bold tracking-tight">AgroPlanner <span class="text-primary/70 font-normal">v2.5</span></h1>
+<div class="flex items-center gap-2">
+<span class="flex items-center gap-1 text-[10px] uppercase tracking-widest text-primary font-bold">
+<span class="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></span>
+                        Pronto para Execução
+                    </span>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-0">
+<div class="flex items-center gap-3 px-4 py-1.5 border border-border-muted rounded-l-full bg-card-bg/50">
+<span class="material-icons-round text-blue-400 text-sm">lock</span>
+<span class="text-[10px] font-bold uppercase tracking-wider text-blue-400">Planejamento Fechado</span>
+</div>
+<div class="w-8 h-[1px] bg-border-muted"></div>
+<div class="flex items-center gap-3 px-4 py-1.5 border border-primary/50 bg-primary/5">
+<span class="material-icons-round text-primary text-sm">task_alt</span>
+<span class="text-[10px] font-bold uppercase tracking-wider text-primary">Validado para Campo</span>
+</div>
+<div class="w-8 h-[1px] bg-border-muted"></div>
+<div class="flex items-center gap-3 px-4 py-1.5 border border-border-muted rounded-r-full bg-card-bg/50 opacity-50">
+<span class="material-icons-round text-slate-500 text-sm">assignment</span>
+<span class="text-[10px] font-bold uppercase tracking-wider text-slate-500">Ordens de Serviço Geradas</span>
+</div>
+</div>
+<div class="flex items-center gap-6">
+<div class="flex items-center bg-card-bg border border-border-muted rounded-full px-4 py-1.5 shadow-inner">
+<button class="material-icons-round text-sm hover:text-primary transition-colors">chevron_left</button>
+<span class="mx-4 text-xs font-semibold">Semana 11 (Março 11 - 17)</span>
+<button class="material-icons-round text-sm hover:text-primary transition-colors">chevron_right</button>
+</div>
+<div class="w-8 h-8 rounded-full bg-primary/20 border border-primary/40 flex items-center justify-center text-primary font-bold text-xs">JD</div>
+</div>
+</header>
+<main class="flex-1 flex overflow-hidden relative">
+<aside class="w-16 border-r border-border-muted flex flex-col items-center py-6 gap-8 bg-background-dark z-20">
+<button class="p-2 text-primary bg-primary/10 rounded-lg material-icons-round">dashboard</button>
+<button class="p-2 text-slate-500 hover:text-primary transition-colors material-icons-round">calendar_today</button>
+<button class="p-2 text-slate-500 hover:text-primary transition-colors material-icons-round">inventory_2</button>
+<button class="p-2 text-slate-500 hover:text-primary transition-colors material-icons-round">precision_manufacturing</button>
+<div class="mt-auto">
+<button class="p-2 text-slate-500 hover:text-primary transition-colors material-icons-round">settings</button>
+</div>
+</aside>
+<div class="flex-1 flex flex-col overflow-hidden grid-bg relative">
+<div class="flex border-b border-border-muted bg-background-dark/95 backdrop-blur-sm z-10">
+<div class="w-48 flex-shrink-0 border-r border-border-muted px-4 py-3 flex items-center gap-2 bg-background-dark">
+<span class="material-icons-round text-primary text-sm">view_timeline</span>
+<span class="text-[10px] font-bold uppercase tracking-widest opacity-60">Operações Fixas</span>
+</div>
+<div class="flex-1 flex overflow-hidden">
+<div class="flex-1 min-w-[120px] border-r border-border-muted flex flex-col items-center justify-center py-2">
+<span class="text-[9px] uppercase opacity-50 font-bold">SEG 11</span>
+</div>
+<div class="flex-1 min-w-[120px] border-r border-border-muted flex flex-col items-center justify-center py-2 bg-primary/5">
+<span class="text-[9px] uppercase text-primary font-bold">TER 12</span>
+</div>
+<div class="flex-1 min-w-[120px] border-r border-border-muted flex flex-col items-center justify-center py-2">
+<span class="text-[9px] uppercase opacity-50 font-bold">QUA 13</span>
+</div>
+<div class="flex-1 min-w-[120px] border-r border-border-muted flex flex-col items-center justify-center py-2">
+<span class="text-[9px] uppercase opacity-50 font-bold">QUI 14</span>
+</div>
+<div class="flex-1 min-w-[120px] border-r border-border-muted flex flex-col items-center justify-center py-2">
+<span class="text-[9px] uppercase opacity-50 font-bold">SEX 15</span>
+</div>
+<div class="flex-1 min-w-[120px] border-r border-border-muted flex flex-col items-center justify-center py-2">
+<span class="text-[9px] uppercase opacity-50 font-bold">SÁB 16</span>
+</div>
+<div class="flex-1 min-w-[120px] border-r border-border-muted flex flex-col items-center justify-center py-2">
+<span class="text-[9px] uppercase opacity-50 font-bold">DOM 17</span>
+</div>
+</div>
+</div>
+<div class="flex-1 overflow-y-auto custom-scrollbar timeline-locked">
+<div class="flex border-b border-border-muted min-h-[120px]">
+<div class="w-48 flex-shrink-0 border-r border-border-muted bg-background-dark/70 p-4 sticky left-0 z-10 flex flex-col">
+<span class="flex items-center gap-2 text-[11px] font-bold text-primary mb-1">
+<span class="material-icons-round text-base">opacity</span>
+                            PULVERIZAÇÃO
+                        </span>
+<p class="text-[9px] text-slate-500">Manejo Químico</p>
+</div>
+<div class="flex-1 flex">
+<div class="flex-1 min-w-[120px] border-r border-border-muted/20 p-2">
+<div class="bg-card-bg/80 border border-primary/40 rounded-lg p-2 relative overflow-hidden group">
+<div class="absolute top-1 right-1">
+<span class="material-icons-round text-primary text-[14px]">verified</span>
+</div>
+<div class="text-[10px] font-bold text-white mb-1">Fungicida + Inseticida</div>
+<div class="flex items-center gap-1 text-[9px] text-slate-400">
+<span class="material-icons-round text-[10px]">location_on</span>
+                                    Talhão 04, 05
+                                </div>
+<div class="mt-2 flex justify-between items-center border-t border-white/5 pt-1">
+<span class="text-[8px] font-mono text-primary/60">TRACT: 100%</span>
+<span class="material-symbols-outlined text-[12px] text-primary">lock</span>
+</div>
+</div>
+</div>
+<div class="flex-1 min-w-[120px] border-r border-border-muted/20"></div>
+<div class="flex-1 min-w-[120px] border-r border-border-muted/20 p-2">
+<div class="bg-card-bg/80 border border-primary/40 rounded-lg p-2 relative">
+<div class="absolute top-1 right-1">
+<span class="material-icons-round text-primary text-[14px]">verified</span>
+</div>
+<div class="text-[10px] font-bold text-white mb-1">Herbicida Pré-Emerg.</div>
+<div class="text-[9px] text-slate-400">Talhão 12</div>
+<div class="mt-2 flex justify-between items-center border-t border-white/5 pt-1">
+<span class="text-[8px] font-mono text-primary/60">OS: 1042</span>
+<span class="material-symbols-outlined text-[12px] text-primary">lock</span>
+</div>
+</div>
+</div>
+<div class="flex-1 min-w-[120px] border-r border-border-muted/20"></div>
+<div class="flex-1 min-w-[120px] border-r border-border-muted/20"></div>
+<div class="flex-1 min-w-[120px] border-r border-border-muted/20"></div>
+<div class="flex-1 min-w-[120px] border-r border-border-muted/20"></div>
+</div>
+</div>
+<div class="flex border-b border-border-muted min-h-[100px]">
+<div class="w-48 flex-shrink-0 border-r border-border-muted bg-background-dark/70 p-4 sticky left-0 z-10">
+<span class="flex items-center gap-2 text-[11px] font-bold text-cyan-400 mb-1">
+<span class="material-symbols-outlined text-base">water_drop</span>
+                            IRRIGAÇÃO
+                        </span>
+</div>
+<div class="flex-1 flex">
+<div class="flex-1 min-w-[120px] border-r border-border-muted/20"></div>
+<div class="flex-1 min-w-[120px] border-r border-border-muted/20 p-2">
+<div class="bg-card-bg/80 border border-cyan-500/30 rounded-lg p-2 relative">
+<div class="absolute top-1 right-1">
+<span class="material-icons-round text-cyan-400 text-[14px]">verified</span>
+</div>
+<div class="text-[10px] font-bold text-slate-200">Lâmina 20mm</div>
+<div class="text-[9px] text-cyan-400/70 font-bold mt-1 uppercase">Pivô 04</div>
+</div>
+</div>
+<div class="flex-1 min-w-[120px] border-r border-border-muted/20"></div>
+<div class="flex-1 min-w-[120px] border-r border-border-muted/20 p-2">
+<div class="bg-card-bg/80 border border-cyan-500/30 rounded-lg p-2 relative">
+<div class="absolute top-1 right-1">
+<span class="material-icons-round text-cyan-400 text-[14px]">verified</span>
+</div>
+<div class="text-[10px] font-bold text-slate-200">Lâmina 15mm</div>
+<div class="text-[9px] text-cyan-400/70 font-bold mt-1 uppercase">Setor Sul</div>
+</div>
+</div>
+<div class="flex-1 min-w-[120px] border-r border-border-muted/20"></div>
+<div class="flex-1 min-w-[120px] border-r border-border-muted/20"></div>
+<div class="flex-1 min-w-[120px] border-r border-border-muted/20"></div>
+</div>
+</div>
+<div class="flex border-b border-border-muted min-h-[100px]">
+<div class="w-48 flex-shrink-0 border-r border-border-muted bg-background-dark/70 p-4 sticky left-0 z-10">
+<span class="flex items-center gap-2 text-[11px] font-bold text-pink-400 mb-1">
+<span class="material-symbols-outlined text-base">pan_tool</span>
+                            INTERVENÇÃO
+                        </span>
+</div>
+<div class="flex-1 flex">
+<div class="flex-1 min-w-[120px] border-r border-border-muted/20"></div>
+<div class="flex-1 min-w-[120px] border-r border-border-muted/20"></div>
+<div class="flex-1 min-w-[120px] border-r border-border-muted/20 p-2">
+<div class="bg-card-bg/80 border border-pink-500/30 rounded-lg p-2 relative">
+<div class="absolute top-1 right-1">
+<span class="material-icons-round text-pink-400 text-[14px]">verified</span>
+</div>
+<div class="text-[10px] font-bold text-slate-200 leading-tight">Cataçāo de Ervas</div>
+<div class="text-[8px] text-pink-400/70 font-bold mt-1 uppercase tracking-tighter">Equipe A</div>
+</div>
+</div>
+<div class="flex-1 min-w-[120px] border-r border-border-muted/20 p-2">
+<div class="bg-card-bg/80 border border-pink-500/30 rounded-lg p-2 relative">
+<div class="absolute top-1 right-1">
+<span class="material-icons-round text-pink-400 text-[14px]">verified</span>
+</div>
+<div class="text-[10px] font-bold text-slate-200 leading-tight">Manejo de Pragas</div>
+<div class="text-[8px] text-pink-400/70 font-bold mt-1 uppercase tracking-tighter">Monitoring</div>
+</div>
+</div>
+<div class="flex-1 min-w-[120px] border-r border-border-muted/20"></div>
+<div class="flex-1 min-w-[120px] border-r border-border-muted/20"></div>
+<div class="flex-1 min-w-[120px] border-r border-border-muted/20"></div>
+</div>
+</div>
+</div>
+<div class="flex border-t border-border-muted bg-background-dark/95 z-20">
+<div class="w-48 flex-shrink-0 border-r border-border-muted p-3 bg-background-dark">
+<span class="text-[10px] font-bold uppercase tracking-wider opacity-40">Tração Semanal</span>
+</div>
+<div class="flex-1 flex h-12">
+<div class="flex-1 min-w-[120px] border-r border-border-muted/20 flex flex-col items-center justify-center">
+<div class="text-[8px] text-slate-500 uppercase">Capacidade</div>
+<div class="text-[10px] font-bold">85%</div>
+</div>
+<div class="flex-1 min-w-[120px] border-r border-border-muted/20 flex flex-col items-center justify-center bg-primary/5">
+<div class="text-[8px] text-primary/70 uppercase">Capacidade</div>
+<div class="text-[10px] font-bold text-primary">92%</div>
+</div>
+<div class="flex-1 min-w-[120px] border-r border-border-muted/20 flex flex-col items-center justify-center">
+<div class="text-[8px] text-slate-500 uppercase">Capacidade</div>
+<div class="text-[10px] font-bold">78%</div>
+</div>
+<div class="flex-1 min-w-[120px] border-r border-border-muted/20 flex flex-col items-center justify-center">
+<div class="text-[8px] text-slate-500 uppercase">Capacidade</div>
+<div class="text-[10px] font-bold">95%</div>
+</div>
+<div class="flex-1 min-w-[120px] border-r border-border-muted/20 flex flex-col items-center justify-center">
+<div class="text-[8px] text-slate-500 uppercase">Capacidade</div>
+<div class="text-[10px] font-bold">100%</div>
+</div>
+<div class="flex-1 min-w-[120px] border-r border-border-muted/20"></div>
+<div class="flex-1 min-w-[120px] border-r border-border-muted/20"></div>
+</div>
+</div>
+</div>
+<aside class="w-80 border-l border-border-muted bg-background-dark/50 flex flex-col z-20 overflow-hidden">
+<div class="p-4 border-b border-border-muted flex items-center justify-between">
+<div>
+<h2 class="text-xs font-bold uppercase tracking-wider text-slate-200">Pacotes Extras</h2>
+<p class="text-[10px] text-slate-500">Complementos Dinâmicos</p>
+</div>
+<button class="bg-primary/20 text-primary p-1.5 rounded-full hover:bg-primary/30 transition-all shadow-lg shadow-primary/5">
+<span class="material-icons-round text-base">add</span>
+</button>
+</div>
+<div class="flex-1 overflow-y-auto p-4 space-y-4 custom-scrollbar">
+<div class="space-y-3">
+<div class="flex items-center justify-between text-[10px] font-bold text-slate-500 px-1">
+<span>AÇÕES RECENTES</span>
+<span class="material-icons-round text-sm">bolt</span>
+</div>
+<div class="bg-card-bg border border-border-muted rounded-xl p-3 hover:border-primary/30 transition-colors group cursor-pointer relative overflow-hidden">
+<div class="absolute top-0 right-0 w-16 h-16 -mr-8 -mt-8 bg-primary/5 rounded-full blur-xl group-hover:bg-primary/10 transition-all"></div>
+<div class="flex items-start justify-between mb-2">
+<span class="text-[9px] font-bold text-primary bg-primary/10 px-1.5 py-0.5 rounded">ADICIONAL</span>
+<span class="text-[9px] font-mono text-slate-500">ID: #9902</span>
+</div>
+<h3 class="text-[11px] font-bold text-white leading-tight">Óleo Mineral Adjuvante</h3>
+<p class="text-[10px] text-slate-400 mt-1">Reforço para Talhão 08</p>
+<div class="mt-3 flex items-center gap-2">
+<div class="flex-1 h-1 bg-white/5 rounded-full overflow-hidden">
+<div class="w-3/4 h-full bg-primary/60"></div>
+</div>
+<span class="text-[9px] font-bold text-primary">Disponível</span>
+</div>
+</div>
+<div class="bg-card-bg border border-border-muted rounded-xl p-3 hover:border-primary/30 transition-colors cursor-pointer">
+<div class="flex items-start justify-between mb-2">
+<span class="text-[9px] font-bold text-orange-400 bg-orange-400/10 px-1.5 py-0.5 rounded">COMPLEMENTO</span>
+<span class="text-[9px] font-mono text-slate-500">ID: #9914</span>
+</div>
+<h3 class="text-[11px] font-bold text-white leading-tight">Sulfato de Amônio</h3>
+<p class="text-[10px] text-slate-400 mt-1">Correção de Nitrogênio</p>
+</div>
+<div class="border border-dashed border-border-muted rounded-xl p-6 flex flex-col items-center justify-center gap-2 group hover:border-primary/40 transition-all cursor-pointer">
+<div class="w-8 h-8 rounded-full border border-dashed border-border-muted flex items-center justify-center group-hover:bg-primary/10 group-hover:border-primary/40 transition-all">
+<span class="material-icons-round text-slate-500 group-hover:text-primary">add</span>
+</div>
+<span class="text-[9px] font-bold text-slate-500 uppercase tracking-widest group-hover:text-primary">Novo Pacote</span>
+</div>
+</div>
+</div>
+<div class="p-4 border-t border-border-muted bg-background-dark">
+<button class="w-full bg-primary hover:bg-primary/90 text-background-dark font-bold text-xs py-3 rounded-lg flex items-center justify-center gap-2 shadow-lg shadow-primary/10 transition-transform active:scale-95">
+<span class="material-icons-round text-sm">auto_awesome</span>
+                    ADICIONAR COMPLEMENTO
+                </button>
+<p class="text-[9px] text-center text-slate-500 mt-2 italic px-4">Flexibilidade para o campo sem alterar o plano mestre.</p>
+</div>
+</aside>
+</main>
+<div class="fixed bottom-6 right-8 w-52 h-36 rounded-xl overflow-hidden border-2 border-primary/20 shadow-2xl z-40 group cursor-pointer ring-4 ring-background-dark/30 hover:border-primary/60 transition-all">
+<div class="absolute inset-0 bg-background-dark/50 group-hover:bg-transparent transition-all z-10 flex items-end p-3">
+<div class="bg-background-dark/90 px-2 py-1 rounded backdrop-blur-md border border-white/10">
+<span class="text-[9px] font-bold uppercase tracking-widest text-primary">Mapa Ativo: Zona 04</span>
+</div>
+</div>
+<img alt="Map View" class="w-full h-full object-cover scale-110 group-hover:scale-100 transition-transform duration-700" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCErVBH6U1TkqNxphlIaElWDr3J1jMFxj8uL-L5TVR1gXkwT8-wZjZbjSRykyFMnZhemgQ4sHDHL0IugSPNweEx_I02a2QKLOZ0ktyrbpIgLZLIg9jNyKM5hw9hUOFz4xwie4zpeVdDI11LR2nA51ZmAvwSDcLI5ZiWFgu8nucIJDO1hjlDbnuIHR2l2gt6CSYTSKnYB0fOi70ttD080gulDtbdVA7Hi2FpQ6zyvD-MppLH5C0O8HxdY9_ZIKALDADu8DVUW5-vMyc"/>
+</div>
+
+</body></html>
