@@ -6,6 +6,7 @@ import { cn } from '@/lib/utils';
 import { Lock, Ban } from 'lucide-react';
 import { isOperationCompatible } from '@/lib/validation';
 import { getStageForWeek, getPhaseColors } from '@/lib/phenology';
+import { usePlanning } from '@/context/PlanningContext';
 
 interface WeekColumnProps {
     weekIndex: number;
@@ -18,6 +19,7 @@ interface WeekColumnProps {
 
 export function WeekColumn({ weekIndex, operationType, events, isOverlay, onEdit, isLocked }: WeekColumnProps) {
     const { active } = useDndContext();
+    const { plantingWeek } = usePlanning();
 
     const isDropValid = React.useMemo(() => {
         if (!active || !active.data.current) return false;
@@ -33,7 +35,7 @@ export function WeekColumn({ weekIndex, operationType, events, isOverlay, onEdit
     });
 
     // Phenological phase color for vertical indicator
-    const stage = getStageForWeek(weekIndex);
+    const stage = getStageForWeek(weekIndex, plantingWeek);
     const phaseColors = stage ? getPhaseColors(stage.phase) : null;
 
     return (

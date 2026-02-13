@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/Button';
 import { cn, formatCurrency } from '@/lib/utils';
 import { Plane, Tractor, Droplets, Sprout, Bug, Zap, Eye } from 'lucide-react';
 import { getDAE, getStageForWeek, getPhaseColors } from '@/lib/phenology';
+import { usePlanning } from '@/context/PlanningContext';
 
 interface EventCardProps {
     event: OperationalEvent;
@@ -14,6 +15,7 @@ interface EventCardProps {
 }
 
 export function EventCard({ event, onEdit }: EventCardProps) {
+    const { plantingWeek } = usePlanning();
     const { attributes, listeners, setNodeRef: setDragRef, transform, isDragging } = useDraggable({
         id: event.id,
         data: { event }
@@ -51,7 +53,12 @@ export function EventCard({ event, onEdit }: EventCardProps) {
     // Ícone de Aplicação
     const getApplicationIcon = () => {
         switch (event.operationType) {
-            case 'PULVERIZACAO_AEREA': return <Plane size={14} className="text-sky-400" />;
+            case 'PULVERIZACAO_AEREA': return (
+                <span className="flex items-center gap-1">
+                    <Plane size={14} className="text-sky-400" />
+                    <span className="text-[8px] font-bold text-sky-500/70 tracking-tight">AIR TRACTOR</span>
+                </span>
+            );
             case 'PULVERIZACAO_TERRESTRE': return <Tractor size={14} className="text-amber-400" />;
             case 'PLANTIO_MECANIZADO': return <Sprout size={14} className="text-agri-green-400" />;
             case 'FERTIRRIGACAO': return <Droplets size={14} className="text-blue-400" />;
@@ -72,9 +79,9 @@ export function EventCard({ event, onEdit }: EventCardProps) {
         }
     };
 
-    // DAE and Stage from centralized phenology
-    const dae = getDAE(event.weekIndex);
-    const stage = getStageForWeek(event.weekIndex);
+    // DAE and Stage from centralized phenology (reactive to plantingWeek)
+    const dae = getDAE(event.weekIndex, plantingWeek);
+    const stage = getStageForWeek(event.weekIndex, plantingWeek);
     const stageLabel = protocol.phenologicalStage || stage?.label || `V${Math.max(1, Math.floor(dae / 7))}`;
     const phaseFull = stage?.fullLabel || '';
     const phaseColors = stage ? getPhaseColors(stage.phase) : getPhaseColors('VEGETATIVA');

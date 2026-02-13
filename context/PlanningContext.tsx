@@ -9,6 +9,8 @@ interface PlanningContextType {
     protocols: Protocol[];
     selectedWeek: number;
     setSelectedWeek: (week: number) => void;
+    plantingWeek: number;
+    setPlantingWeek: (week: number) => void;
     moveEvent: (eventId: string, newWeekIndex: number) => void;
     mergeEvents: (targetEventId: string, sourceEventId: string) => void;
     updateProtocolPackage: (protocolId: string, packageId: string) => void;
@@ -22,6 +24,7 @@ export function PlanningProvider({ children }: { children: React.ReactNode }) {
     const [events, setEvents] = useState<OperationalEvent[]>([]);
     const [protocols, setProtocols] = useState<Protocol[]>([]);
     const [selectedWeek, setSelectedWeek] = useState(0);
+    const [plantingWeek, setPlantingWeek] = useState(0); // Week 0 = plantio occurred
 
     // Load initial Data
     useEffect(() => {
@@ -108,6 +111,8 @@ export function PlanningProvider({ children }: { children: React.ReactNode }) {
             protocols,
             selectedWeek,
             setSelectedWeek,
+            plantingWeek,
+            setPlantingWeek,
             moveEvent,
             mergeEvents,
             updateProtocolPackage,

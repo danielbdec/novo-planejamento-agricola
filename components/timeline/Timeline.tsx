@@ -20,7 +20,7 @@ import { EventCard } from '@/components/protocol/EventCard';
 import { ChevronLeft, ChevronRight, Calendar, Tractor, ChevronDown, MapPin, Sprout, Flower2, Wheat } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
-import { getStageForWeek, isFirstWeekOfStage, getPhaseColors } from '@/lib/phenology';
+import { getStageForWeek, isFirstWeekOfStage, getStageStartingAt, getPhaseColors } from '@/lib/phenology';
 
 const OPERATIONS: OperationType[] = [
     'PULVERIZACAO_TERRESTRE', // Maior volume
@@ -37,7 +37,7 @@ import { Plus } from 'lucide-react';
 import { isOperationCompatible } from '@/lib/validation';
 
 export function Timeline() {
-    const { events, moveEvent, mergeEvents } = usePlanning();
+    const { events, moveEvent, mergeEvents, plantingWeek } = usePlanning();
     const [activeEvent, setActiveEvent] = useState<OperationalEvent | null>(null);
     const [mergeCandidate, setMergeCandidate] = useState<{ target: OperationalEvent, source: OperationalEvent } | null>(null);
     const [isManualModalOpen, setIsManualModalOpen] = useState(false);
@@ -256,43 +256,49 @@ export function Timeline() {
                 ))}
             </div>
 
-            {/* Régua Fenológica — Alinhada com colunas, entre header e swimlanes */}
-            <div className="grid grid-cols-6 gap-0 pl-1 pr-2 mb-1">
+            {/* Régua Fenológica — Connecting line + stage markers aligned with columns */}
+            <div className="relative grid grid-cols-6 gap-0 pl-1 pr-2 mb-2 py-2 bg-slate-950/40 backdrop-blur-sm rounded-lg border border-white/5">
+                {/* Connecting horizontal line */}
+                <div className="absolute top-1/2 left-4 right-4 h-px bg-gradient-to-r from-green-500/30 via-green-500/20 to-amber-500/30 -translate-y-1/2" />
+
                 {visibleWeekIndices.map((weekIdx) => {
-                    const stage = getStageForWeek(weekIdx);
-                    const isFirst = isFirstWeekOfStage(weekIdx);
+                    const stage = getStageForWeek(weekIdx, plantingWeek);
+                    const stageStart = getStageStartingAt(weekIdx, plantingWeek);
+                    const isFirst = isFirstWeekOfStage(weekIdx, plantingWeek);
                     const phase = stage?.phase || 'VEGETATIVA';
                     const colors = getPhaseColors(phase);
 
-                    const StageIcon = phase === 'VEGETATIVA'
-                        ? (stage?.label === 'VE' ? Sprout : Sprout)
-                        : (stage?.label.startsWith('R5') || stage?.label === 'R7' || stage?.label === 'R8' ? Wheat : Flower2);
+                    // Icon evolves through lifecycle
+                    const StageIcon = !stage ? Sprout
+                        : stage.phase === 'VEGETATIVA' ? Sprout
+                            : (stage.id === 'R1' || stage.id === 'R2') ? Flower2
+                                : Wheat;
 
                     return (
-                        <div
-                            key={weekIdx}
-                            className={cn(
-                                "flex items-center justify-center gap-1.5 py-1.5 mx-1 rounded-md border transition-all",
-                                isFirst
-                                    ? `${colors.bgLight} ${colors.border} border-solid`
-                                    : "border-transparent bg-transparent",
-                            )}
-                        >
-                            {stage && (
-                                <>
-                                    <StageIcon size={12} className={cn(colors.text, !isFirst && "opacity-30")} />
-                                    <span className={cn(
-                                        "text-[10px] font-bold tracking-wide",
-                                        isFirst ? colors.text : "text-slate-600",
-                                    )}>
-                                        {stage.label}
+                        <div key={weekIdx} className="flex items-center justify-center relative z-10">
+                            {isFirst && stageStart ? (
+                                <div className={cn(
+                                    "flex items-center gap-1.5 px-2.5 py-1 rounded-full border",
+                                    colors.bgLight, colors.border,
+                                    "shadow-sm"
+                                )}>
+                                    {/* Stage dot on the line */}
+                                    <div className={cn("w-2.5 h-2.5 rounded-full border-2 border-slate-900 shadow-lg", colors.bg)} />
+                                    <StageIcon size={12} className={stageStart.color} />
+                                    <span className={cn("text-[10px] font-bold tracking-wide", stageStart.color)}>
+                                        {stageStart.label}
                                     </span>
-                                    {isFirst && stage.fullLabel && (
-                                        <span className="text-[9px] text-slate-500 hidden xl:inline truncate max-w-[60px]" title={stage.fullLabel}>
-                                            {stage.fullLabel}
-                                        </span>
-                                    )}
-                                </>
+                                    <span className="text-[9px] text-slate-500 hidden xl:inline" title={stageStart.fullLabel}>
+                                        {stageStart.fullLabel}
+                                    </span>
+                                </div>
+                            ) : stage ? (
+                                <div className="flex items-center gap-1 opacity-40">
+                                    <div className={cn("w-1.5 h-1.5 rounded-full", colors.bg)} />
+                                    <span className="text-[9px] text-slate-600 font-mono">{stage.label}</span>
+                                </div>
+                            ) : (
+                                <div className="w-1.5 h-1.5 rounded-full bg-slate-700/50" />
                             )}
                         </div>
                     );
