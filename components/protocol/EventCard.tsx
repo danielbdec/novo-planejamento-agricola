@@ -1,11 +1,10 @@
 import React from 'react';
-import { OperationalEvent } from '@/lib/types';
+import { OperationalEvent, ProtocolCategory } from '@/lib/types';
 import { useDraggable, useDroppable } from '@dnd-kit/core';
 import { MergedEventCard } from './MergedEventCard';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { cn, formatCurrency } from '@/lib/utils';
-import { GripVertical, Eye } from 'lucide-react';
 import { GripVertical, Eye, Plane, Tractor, Droplets, Sprout, Bug, Zap } from 'lucide-react';
 
 interface EventCardProps {
