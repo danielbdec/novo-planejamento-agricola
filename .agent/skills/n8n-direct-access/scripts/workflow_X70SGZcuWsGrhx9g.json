@@ -1,0 +1,609 @@
+{
+  "updatedAt": "2026-02-06T23:30:51.920Z",
+  "createdAt": "2026-02-06T23:19:22.154Z",
+  "id": "X70SGZcuWsGrhx9g",
+  "name": "002 - Naturezas",
+  "description": null,
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $items().map(i => i.json) }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        368,
+        96
+      ],
+      "id": "80db951b-88df-4b73-9843-f77ad47ed634",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "b625bcb8-7844-4cbf-8528-a4f9dad001e3",
+              "name": "grp",
+              "value": "",
+              "type": "string"
+            },
+            {
+              "id": "726d1db5-2b55-4905-9a86-1f4e2eb041f1",
+              "name": "filial",
+              "value": "",
+              "type": "string"
+            },
+            {
+              "id": "d8b9cc95-9d25-400d-84ff-32db7b539588",
+              "name": "nome",
+              "value": "",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -544,
+        128
+      ],
+      "id": "5c6baeac-408d-42bb-bbff-5827ec93de90",
+      "name": "Seta Campos"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "grp",
+                    "rightValue": "01",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "b87004c8-24a2-4032-bdb1-d202f8ccc55e"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "efea1065-9913-46b4-a802-e32a028a4cab",
+                    "leftValue": "grp",
+                    "rightValue": "03",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        -272,
+        128
+      ],
+      "id": "9a3f326f-40d8-45dd-a837-59deb2177e58",
+      "name": "Grupo"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "orcamento-busca-natureza",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -848,
+        128
+      ],
+      "id": "9e5df4af-a6bc-4909-a664-335b4afab1ec",
+      "name": "Consulta Naturezas",
+      "webhookId": "2e8fd683-bd9a-4b62-bc9b-5fc6803eccf4"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT ED_CODIGO AS 'cod', ED_DESCRIC AS 'descricao' \nFROM SED010 ED\nWHERE ED.D_E_L_E_T_ <> '*'\nAND ( ED_DESCRIC LIKE UPPER('%nome%') OR ED_CODIGO LIKE UPPER('%nome%') )\nAND ED_FILIAL = SUBSTRING('filial',1,2)\nAND ED_MSBLQL <> '1'"
+      },
+      "type": "n8n-nodes-base.microsoftSql",
+      "typeVersion": 1.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "e48ed516-91c6-4bd8-b3a6-54d3d2e20e88",
+      "name": "Busca SED010",
+      "retryOnFail": true,
+      "credentials": {
+        "microsoftSql": {
+          "id": "nENXwCqIDPtcL8m7",
+          "name": "Microsoft SQL account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT ED_CODIGO AS 'cod', ED_DESCRIC AS 'descricao' \nFROM SED010 ED\nWHERE ED.D_E_L_E_T_ <> '*'\nAND ( ED_DESCRIC LIKE UPPER('%nome%') OR ED_CODIGO LIKE UPPER('%nome%') )\nAND ED_FILIAL = SUBSTRING('filial',1,2)\nAND ED_MSBLQL <> '1'"
+      },
+      "type": "n8n-nodes-base.microsoftSql",
+      "typeVersion": 1.1,
+      "position": [
+        0,
+        192
+      ],
+      "id": "13c2c78e-3132-4b10-93f5-87139d4b99f5",
+      "name": "Busca SED030",
+      "retryOnFail": true,
+      "credentials": {
+        "microsoftSql": {
+          "id": "nENXwCqIDPtcL8m7",
+          "name": "Microsoft SQL account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Seta Campos": {
+      "main": [
+        [
+          {
+            "node": "Grupo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Grupo": {
+      "main": [
+        [
+          {
+            "node": "Busca SED010",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Busca SED030",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Consulta Naturezas": {
+      "main": [
+        [
+          {
+            "node": "Seta Campos",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Busca SED010": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Busca SED030": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": true,
+    "timeSavedMode": "fixed",
+    "callerPolicy": "workflowsFromSameOwner",
+    "errorWorkflow": "BNt9cLp1IJvpBdyg"
+  },
+  "staticData": null,
+  "meta": null,
+  "pinData": {
+    "Consulta Naturezas": [
+      {
+        "json": {
+          "headers": {
+            "host": "localhost:5678",
+            "connection": "keep-alive",
+            "content-type": "application/json",
+            "accept": "*/*",
+            "accept-language": "*",
+            "sec-fetch-mode": "cors",
+            "user-agent": "node",
+            "pragma": "no-cache",
+            "cache-control": "no-cache",
+            "accept-encoding": "gzip, deflate",
+            "content-length": "2"
+          },
+          "params": {},
+          "query": {},
+          "body": {},
+          "webhookUrl": "http://srv.gcsagro.com.br:5678/webhook/consulta-nf-entrada",
+          "executionMode": "production"
+        }
+      }
+    ]
+  },
+  "versionId": "1fbcceab-ef60-4086-9e17-7c949813dc4c",
+  "activeVersionId": "1fbcceab-ef60-4086-9e17-7c949813dc4c",
+  "versionCounter": 9,
+  "triggerCount": 1,
+  "shared": [
+    {
+      "updatedAt": "2026-02-06T23:19:22.154Z",
+      "createdAt": "2026-02-06T23:19:22.154Z",
+      "role": "workflow:owner",
+      "workflowId": "X70SGZcuWsGrhx9g",
+      "projectId": "KfMM719qOiW2uYQt",
+      "project": {
+        "updatedAt": "2025-12-26T22:11:14.375Z",
+        "createdAt": "2025-12-26T22:03:03.688Z",
+        "id": "KfMM719qOiW2uYQt",
+        "name": "Ti GCS <ti@gcsagro.com.br>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "creatorId": "ce465cd5-d65e-4c22-bca0-647a3d53e5a7",
+        "projectRelations": [
+          {
+            "updatedAt": "2025-12-26T22:03:03.688Z",
+            "createdAt": "2025-12-26T22:03:03.688Z",
+            "userId": "ce465cd5-d65e-4c22-bca0-647a3d53e5a7",
+            "projectId": "KfMM719qOiW2uYQt",
+            "user": {
+              "updatedAt": "2026-02-06T11:07:34.467Z",
+              "createdAt": "2025-12-26T22:02:58.354Z",
+              "id": "ce465cd5-d65e-4c22-bca0-647a3d53e5a7",
+              "email": "ti@gcsagro.com.br",
+              "firstName": "Ti",
+              "lastName": "GCS",
+              "personalizationAnswers": {
+                "version": "v4",
+                "personalization_survey_submitted_at": "2025-12-26T22:11:48.077Z",
+                "personalization_survey_n8n_version": "1.121.3",
+                "companyIndustryExtended": [
+                  "it-industry"
+                ],
+                "companyType": "other"
+              },
+              "settings": {
+                "userActivated": true,
+                "easyAIWorkflowOnboarded": true,
+                "firstSuccessfulWorkflowId": "2H8bqWyPEIxRrOtK",
+                "userActivatedAt": 1766824222124,
+                "npsSurvey": {
+                  "responded": true,
+                  "lastShownAt": 1767819022407
+                }
+              },
+              "disabled": false,
+              "mfaEnabled": false,
+              "lastActiveAt": "2026-02-06",
+              "isPending": false
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "tags": [],
+  "activeVersion": {
+    "updatedAt": "2026-02-06T23:30:43.209Z",
+    "createdAt": "2026-02-06T23:30:33.911Z",
+    "versionId": "1fbcceab-ef60-4086-9e17-7c949813dc4c",
+    "workflowId": "X70SGZcuWsGrhx9g",
+    "nodes": [
+      {
+        "parameters": {
+          "respondWith": "json",
+          "responseBody": "={{ $items().map(i => i.json) }}",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.respondToWebhook",
+        "typeVersion": 1.1,
+        "position": [
+          368,
+          96
+        ],
+        "id": "80db951b-88df-4b73-9843-f77ad47ed634",
+        "name": "Respond to Webhook"
+      },
+      {
+        "parameters": {
+          "assignments": {
+            "assignments": [
+              {
+                "id": "b625bcb8-7844-4cbf-8528-a4f9dad001e3",
+                "name": "grp",
+                "value": "",
+                "type": "string"
+              },
+              {
+                "id": "726d1db5-2b55-4905-9a86-1f4e2eb041f1",
+                "name": "filial",
+                "value": "",
+                "type": "string"
+              },
+              {
+                "id": "d8b9cc95-9d25-400d-84ff-32db7b539588",
+                "name": "nome",
+                "value": "",
+                "type": "string"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.4,
+        "position": [
+          -544,
+          128
+        ],
+        "id": "5c6baeac-408d-42bb-bbff-5827ec93de90",
+        "name": "Seta Campos"
+      },
+      {
+        "parameters": {
+          "rules": {
+            "values": [
+              {
+                "conditions": {
+                  "options": {
+                    "caseSensitive": true,
+                    "leftValue": "",
+                    "typeValidation": "strict",
+                    "version": 3
+                  },
+                  "conditions": [
+                    {
+                      "leftValue": "grp",
+                      "rightValue": "01",
+                      "operator": {
+                        "type": "string",
+                        "operation": "equals"
+                      },
+                      "id": "b87004c8-24a2-4032-bdb1-d202f8ccc55e"
+                    }
+                  ],
+                  "combinator": "and"
+                }
+              },
+              {
+                "conditions": {
+                  "options": {
+                    "caseSensitive": true,
+                    "leftValue": "",
+                    "typeValidation": "strict",
+                    "version": 3
+                  },
+                  "conditions": [
+                    {
+                      "id": "efea1065-9913-46b4-a802-e32a028a4cab",
+                      "leftValue": "grp",
+                      "rightValue": "03",
+                      "operator": {
+                        "type": "string",
+                        "operation": "equals",
+                        "name": "filter.operator.equals"
+                      }
+                    }
+                  ],
+                  "combinator": "and"
+                }
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.switch",
+        "typeVersion": 3.4,
+        "position": [
+          -272,
+          128
+        ],
+        "id": "9a3f326f-40d8-45dd-a837-59deb2177e58",
+        "name": "Grupo"
+      },
+      {
+        "parameters": {
+          "httpMethod": "POST",
+          "path": "orcamento-busca-natureza",
+          "responseMode": "responseNode",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 2,
+        "position": [
+          -848,
+          128
+        ],
+        "id": "9e5df4af-a6bc-4909-a664-335b4afab1ec",
+        "name": "Consulta Naturezas",
+        "webhookId": "2e8fd683-bd9a-4b62-bc9b-5fc6803eccf4"
+      },
+      {
+        "parameters": {
+          "operation": "executeQuery",
+          "query": "SELECT ED_CODIGO AS 'cod', ED_DESCRIC AS 'descricao' \nFROM SED010 ED\nWHERE ED.D_E_L_E_T_ <> '*'\nAND ( ED_DESCRIC LIKE UPPER('%nome%') OR ED_CODIGO LIKE UPPER('%nome%') )\nAND ED_FILIAL = SUBSTRING('filial',1,2)\nAND ED_MSBLQL <> '1'"
+        },
+        "type": "n8n-nodes-base.microsoftSql",
+        "typeVersion": 1.1,
+        "position": [
+          0,
+          0
+        ],
+        "id": "e48ed516-91c6-4bd8-b3a6-54d3d2e20e88",
+        "name": "Busca SED010",
+        "retryOnFail": true,
+        "credentials": {
+          "microsoftSql": {
+            "id": "nENXwCqIDPtcL8m7",
+            "name": "Microsoft SQL account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "operation": "executeQuery",
+          "query": "SELECT ED_CODIGO AS 'cod', ED_DESCRIC AS 'descricao' \nFROM SED010 ED\nWHERE ED.D_E_L_E_T_ <> '*'\nAND ( ED_DESCRIC LIKE UPPER('%nome%') OR ED_CODIGO LIKE UPPER('%nome%') )\nAND ED_FILIAL = SUBSTRING('filial',1,2)\nAND ED_MSBLQL <> '1'"
+        },
+        "type": "n8n-nodes-base.microsoftSql",
+        "typeVersion": 1.1,
+        "position": [
+          0,
+          192
+        ],
+        "id": "13c2c78e-3132-4b10-93f5-87139d4b99f5",
+        "name": "Busca SED030",
+        "retryOnFail": true,
+        "credentials": {
+          "microsoftSql": {
+            "id": "nENXwCqIDPtcL8m7",
+            "name": "Microsoft SQL account"
+          }
+        }
+      }
+    ],
+    "connections": {
+      "Seta Campos": {
+        "main": [
+          [
+            {
+              "node": "Grupo",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Grupo": {
+        "main": [
+          [
+            {
+              "node": "Busca SED010",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Busca SED030",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Consulta Naturezas": {
+        "main": [
+          [
+            {
+              "node": "Seta Campos",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Busca SED010": {
+        "main": [
+          [
+            {
+              "node": "Respond to Webhook",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Busca SED030": {
+        "main": [
+          [
+            {
+              "node": "Respond to Webhook",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "authors": "Ti GCS",
+    "name": "Version 1fbcceab",
+    "description": "",
+    "autosaved": false,
+    "workflowPublishHistory": [
+      {
+        "createdAt": "2026-02-06T23:30:43.194Z",
+        "id": 493,
+        "workflowId": "X70SGZcuWsGrhx9g",
+        "versionId": "1fbcceab-ef60-4086-9e17-7c949813dc4c",
+        "event": "activated",
+        "userId": "ce465cd5-d65e-4c22-bca0-647a3d53e5a7"
+      },
+      {
+        "createdAt": "2026-02-06T23:30:52.054Z",
+        "id": 494,
+        "workflowId": "X70SGZcuWsGrhx9g",
+        "versionId": "1fbcceab-ef60-4086-9e17-7c949813dc4c",
+        "event": "activated",
+        "userId": "ce465cd5-d65e-4c22-bca0-647a3d53e5a7"
+      }
+    ]
+  }
+}

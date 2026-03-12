@@ -1,0 +1,389 @@
+{
+  "updatedAt": "2026-02-06T23:43:53.679Z",
+  "createdAt": "2026-02-06T23:39:11.956Z",
+  "id": "SIiqar9UFcWZXaxR",
+  "name": "002 - Empresas",
+  "description": null,
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $items().map(i => i.json) }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        -64,
+        128
+      ],
+      "id": "e58d6722-24a8-46ad-88ee-a5871e7e9285",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "b625bcb8-7844-4cbf-8528-a4f9dad001e3",
+              "name": "grp",
+              "value": "",
+              "type": "string"
+            },
+            {
+              "id": "726d1db5-2b55-4905-9a86-1f4e2eb041f1",
+              "name": "filial",
+              "value": "",
+              "type": "string"
+            },
+            {
+              "id": "d8b9cc95-9d25-400d-84ff-32db7b539588",
+              "name": "nome",
+              "value": "",
+              "type": "string"
+            },
+            {
+              "id": "9247f865-5ed4-4937-8aeb-e6e81fc9ea3c",
+              "name": "cnpj",
+              "value": "",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -592,
+        128
+      ],
+      "id": "3b34c556-dba6-4091-a129-2aea2a9be0a6",
+      "name": "Seta Campos"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "orcamento-busca-empresas",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -848,
+        128
+      ],
+      "id": "96b0e644-9c40-45e6-821d-13d7651c9818",
+      "name": "Consulta Empresas",
+      "webhookId": "b95b62ca-dd93-4b25-86c5-82b68d7d5ae9"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT M0_CODIGO AS 'grp',M0_CODFIL as 'filial' ,M0_FILIAL as 'nome',M0_CGC as 'cnpj'\nFROM SYS_COMPANY\nWHERE D_E_L_E_T_ <> '*'\nAND M0_CGC <> ''\nAND M0_CODIGO ='grp'\nAND M0_CODFIL = 'filial'\n"
+      },
+      "type": "n8n-nodes-base.microsoftSql",
+      "typeVersion": 1.1,
+      "position": [
+        -320,
+        128
+      ],
+      "id": "b1a4408c-c6bb-4e79-b1ec-31354074792f",
+      "name": "Busca SYS_COMP",
+      "retryOnFail": true,
+      "credentials": {
+        "microsoftSql": {
+          "id": "nENXwCqIDPtcL8m7",
+          "name": "Microsoft SQL account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Seta Campos": {
+      "main": [
+        [
+          {
+            "node": "Busca SYS_COMP",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Consulta Empresas": {
+      "main": [
+        [
+          {
+            "node": "Seta Campos",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Busca SYS_COMP": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false,
+    "timeSavedMode": "fixed",
+    "callerPolicy": "workflowsFromSameOwner",
+    "errorWorkflow": "BNt9cLp1IJvpBdyg"
+  },
+  "staticData": null,
+  "meta": null,
+  "pinData": {
+    "Consulta Empresas": [
+      {
+        "json": {
+          "headers": {
+            "host": "localhost:5678",
+            "connection": "keep-alive",
+            "content-type": "application/json",
+            "accept": "*/*",
+            "accept-language": "*",
+            "sec-fetch-mode": "cors",
+            "user-agent": "node",
+            "pragma": "no-cache",
+            "cache-control": "no-cache",
+            "accept-encoding": "gzip, deflate",
+            "content-length": "2"
+          },
+          "params": {},
+          "query": {},
+          "body": {},
+          "webhookUrl": "http://srv.gcsagro.com.br:5678/webhook/consulta-nf-entrada",
+          "executionMode": "production"
+        }
+      }
+    ]
+  },
+  "versionId": "4a049656-249c-42c2-b626-d3cf0fb73a6b",
+  "activeVersionId": "4a049656-249c-42c2-b626-d3cf0fb73a6b",
+  "versionCounter": 26,
+  "triggerCount": 1,
+  "shared": [
+    {
+      "updatedAt": "2026-02-06T23:39:11.956Z",
+      "createdAt": "2026-02-06T23:39:11.956Z",
+      "role": "workflow:owner",
+      "workflowId": "SIiqar9UFcWZXaxR",
+      "projectId": "KfMM719qOiW2uYQt",
+      "project": {
+        "updatedAt": "2025-12-26T22:11:14.375Z",
+        "createdAt": "2025-12-26T22:03:03.688Z",
+        "id": "KfMM719qOiW2uYQt",
+        "name": "Ti GCS <ti@gcsagro.com.br>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "creatorId": "ce465cd5-d65e-4c22-bca0-647a3d53e5a7",
+        "projectRelations": [
+          {
+            "updatedAt": "2025-12-26T22:03:03.688Z",
+            "createdAt": "2025-12-26T22:03:03.688Z",
+            "userId": "ce465cd5-d65e-4c22-bca0-647a3d53e5a7",
+            "projectId": "KfMM719qOiW2uYQt",
+            "user": {
+              "updatedAt": "2026-02-06T11:07:34.467Z",
+              "createdAt": "2025-12-26T22:02:58.354Z",
+              "id": "ce465cd5-d65e-4c22-bca0-647a3d53e5a7",
+              "email": "ti@gcsagro.com.br",
+              "firstName": "Ti",
+              "lastName": "GCS",
+              "personalizationAnswers": {
+                "version": "v4",
+                "personalization_survey_submitted_at": "2025-12-26T22:11:48.077Z",
+                "personalization_survey_n8n_version": "1.121.3",
+                "companyIndustryExtended": [
+                  "it-industry"
+                ],
+                "companyType": "other"
+              },
+              "settings": {
+                "userActivated": true,
+                "easyAIWorkflowOnboarded": true,
+                "firstSuccessfulWorkflowId": "2H8bqWyPEIxRrOtK",
+                "userActivatedAt": 1766824222124,
+                "npsSurvey": {
+                  "responded": true,
+                  "lastShownAt": 1767819022407
+                }
+              },
+              "disabled": false,
+              "mfaEnabled": false,
+              "lastActiveAt": "2026-02-06",
+              "isPending": false
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "tags": [],
+  "activeVersion": {
+    "updatedAt": "2026-02-06T23:43:55.169Z",
+    "createdAt": "2026-02-06T23:43:53.681Z",
+    "versionId": "4a049656-249c-42c2-b626-d3cf0fb73a6b",
+    "workflowId": "SIiqar9UFcWZXaxR",
+    "nodes": [
+      {
+        "parameters": {
+          "respondWith": "json",
+          "responseBody": "={{ $items().map(i => i.json) }}",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.respondToWebhook",
+        "typeVersion": 1.1,
+        "position": [
+          -64,
+          128
+        ],
+        "id": "e58d6722-24a8-46ad-88ee-a5871e7e9285",
+        "name": "Respond to Webhook"
+      },
+      {
+        "parameters": {
+          "assignments": {
+            "assignments": [
+              {
+                "id": "b625bcb8-7844-4cbf-8528-a4f9dad001e3",
+                "name": "grp",
+                "value": "",
+                "type": "string"
+              },
+              {
+                "id": "726d1db5-2b55-4905-9a86-1f4e2eb041f1",
+                "name": "filial",
+                "value": "",
+                "type": "string"
+              },
+              {
+                "id": "d8b9cc95-9d25-400d-84ff-32db7b539588",
+                "name": "nome",
+                "value": "",
+                "type": "string"
+              },
+              {
+                "id": "9247f865-5ed4-4937-8aeb-e6e81fc9ea3c",
+                "name": "cnpj",
+                "value": "",
+                "type": "string"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.4,
+        "position": [
+          -592,
+          128
+        ],
+        "id": "3b34c556-dba6-4091-a129-2aea2a9be0a6",
+        "name": "Seta Campos"
+      },
+      {
+        "parameters": {
+          "httpMethod": "POST",
+          "path": "orcamento-busca-empresas",
+          "responseMode": "responseNode",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.webhook",
+        "typeVersion": 2,
+        "position": [
+          -848,
+          128
+        ],
+        "id": "96b0e644-9c40-45e6-821d-13d7651c9818",
+        "name": "Consulta Empresas",
+        "webhookId": "b95b62ca-dd93-4b25-86c5-82b68d7d5ae9"
+      },
+      {
+        "parameters": {
+          "operation": "executeQuery",
+          "query": "SELECT M0_CODIGO AS 'grp',M0_CODFIL as 'filial' ,M0_FILIAL as 'nome',M0_CGC as 'cnpj'\nFROM SYS_COMPANY\nWHERE D_E_L_E_T_ <> '*'\nAND M0_CGC <> ''\nAND M0_CODIGO ='grp'\nAND M0_CODFIL = 'filial'\n"
+        },
+        "type": "n8n-nodes-base.microsoftSql",
+        "typeVersion": 1.1,
+        "position": [
+          -320,
+          128
+        ],
+        "id": "b1a4408c-c6bb-4e79-b1ec-31354074792f",
+        "name": "Busca SYS_COMP",
+        "retryOnFail": true,
+        "credentials": {
+          "microsoftSql": {
+            "id": "nENXwCqIDPtcL8m7",
+            "name": "Microsoft SQL account"
+          }
+        }
+      }
+    ],
+    "connections": {
+      "Seta Campos": {
+        "main": [
+          [
+            {
+              "node": "Busca SYS_COMP",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Consulta Empresas": {
+        "main": [
+          [
+            {
+              "node": "Seta Campos",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Busca SYS_COMP": {
+        "main": [
+          [
+            {
+              "node": "Respond to Webhook",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "authors": "Ti GCS",
+    "name": "Version 4a049656",
+    "description": "",
+    "autosaved": false,
+    "workflowPublishHistory": [
+      {
+        "createdAt": "2026-02-06T23:43:55.151Z",
+        "id": 500,
+        "workflowId": "SIiqar9UFcWZXaxR",
+        "versionId": "4a049656-249c-42c2-b626-d3cf0fb73a6b",
+        "event": "activated",
+        "userId": "ce465cd5-d65e-4c22-bca0-647a3d53e5a7"
+      }
+    ]
+  }
+}

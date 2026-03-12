@@ -1,0 +1,1850 @@
+{
+  "updatedAt": "2026-02-06T20:36:41.536Z",
+  "createdAt": "2025-08-21T02:15:48.668Z",
+  "id": "BNt9cLp1IJvpBdyg",
+  "name": "GLOBAL - Erros de Workflows",
+  "description": null,
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "version": 2,
+            "leftValue": "",
+            "caseSensitive": false,
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "9b2f3ff3-db9c-406b-a97f-37620dc5fab9",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              },
+              "leftValue": "={{ ($('Acionador de Erro').item.json.execution?.mode || 'unknown') !== 'manual' }}",
+              "rightValue": "manual"
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {
+          "ignoreCase": true
+        }
+      },
+      "id": "d9d3f469-2e24-4007-b9b4-e8c36015b2e1",
+      "name": "Remove Manual Exec",
+      "type": "n8n-nodes-base.if",
+      "position": [
+        -1104,
+        224
+      ],
+      "typeVersion": 2.2
+    },
+    {
+      "parameters": {
+        "jsCode": "// =======================================================\n// Extrai erros usando SOMENTE o payload do Error Trigger\n// Fonte \u00fanica: n\u00f3 \"Acionador de Erro\"\n// =======================================================\n\n// 1) Payload bruto do Error Trigger (referenciado)\nconst errorTrigger = $('Acionador de Erro').item.json;\n\n// 2) Execu\u00e7\u00e3o e workflow\nconst execution = errorTrigger.execution || {};\nconst workflow  = errorTrigger.workflow || {};\nconst err       = execution.error || {};\n\n// 3) Metadata da execu\u00e7\u00e3o\nconst meta = {\n  executionId: execution.id || null,\n  mode: execution.mode || null,\n  finished: true,\n\n  workflowId: workflow.id || null,\n  workflowName: workflow.name || null,\n\n  lastNodeExecuted: execution.lastNodeExecuted || null,\n  source: execution.executionContext?.source || null,\n\n  startedAt: execution.executionContext?.establishedAt\n    ? new Date(execution.executionContext.establishedAt).toISOString()\n    : null,\n};\n\n// 4) Metadata do erro\nconst nodeDef = err.node || {};\n\nconst errorItem = {\n  ...meta,\n\n  nodeName: nodeDef.name || meta.lastNodeExecuted,\n  nodeId: nodeDef.id || null,\n  nodeType: nodeDef.type || null,\n\n  errorName: err.name || null,\n  errorMessage: err.message || null,\n  errorDescription: err.description || null,\n  messages: err.messages || null,\n  context: err.context || null,\n  stack: err.stack || null,\n\n  parameters: nodeDef.parameters || null,\n};\n\n// 5) Retorno padronizado (1 erro = 1 item)\nreturn [\n  {\n    json: errorItem\n  }\n];\n"
+      },
+      "id": "5b84c041-0c94-4ec8-a0e7-57129f1eb4a3",
+      "name": "Extrai Erros",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        -832,
+        208
+      ],
+      "typeVersion": 2
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Voc\u00ea pode me ajudar com este erro que ocorreu no meu workflow do n8n? {{ JSON.stringify($json) }}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "Voc\u00ea \u00e9 um especialista experiente em n8n, com especializa\u00e7\u00f5es em gerenciamento de inst\u00e2ncias e workflows do n8n. O usu\u00e1rio fornecer\u00e1 um objeto JSON de erro detalhado e seu objetivo \u00e9 revisar, analisar e compreender o erro e, usando sua experi\u00eancia, diagnosticar o problema e fornecer ao usu\u00e1rio um relat\u00f3rio detalhado  mas bem objetivo, com o minimo de palavras possiveis para a compreens\u00e3o, com seu diagn\u00f3stico, causa e solu\u00e7\u00e3o, para que ele entenda e possa corrigir o problema imediatamente."
+        }
+      },
+      "id": "a1ce31fc-30aa-428c-8434-83b8810f5a69",
+      "name": "Agente de Erros",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "position": [
+        -2144,
+        1104
+      ],
+      "typeVersion": 1.8
+    },
+    {
+      "parameters": {},
+      "id": "7c9cb260-175b-4624-9556-9a6373208309",
+      "name": "Acionador de Erro",
+      "type": "n8n-nodes-base.errorTrigger",
+      "position": [
+        -2400,
+        240
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "fac5fbee-d63d-4148-b047-5ed5af4f2574",
+              "name": "error.diagnosis",
+              "type": "string",
+              "value": "={{ $json.output.diagnostico }}"
+            },
+            {
+              "id": "ece9388d-f667-4984-a143-7241f622fe76",
+              "name": "error.cause",
+              "type": "string",
+              "value": "={{ $json.output.causa }}"
+            },
+            {
+              "id": "acb6b34a-a651-42fc-a44a-331b2e0d745c",
+              "name": "error.resolution",
+              "type": "string",
+              "value": "={{ $json.output.solucao }}"
+            },
+            {
+              "id": "c765754b-d6d5-4592-ac3f-99a350bc3c19",
+              "name": "error.workflowName",
+              "type": "string",
+              "value": "={{ $('Extrai Erros').item.json.workflowName }}"
+            },
+            {
+              "id": "dabebc62-3e0c-4d22-afbf-54ba66a912fb",
+              "name": "error.workflowId",
+              "type": "string",
+              "value": "={{ $('Extrai Erros').item.json.workflowId }}"
+            },
+            {
+              "id": "6ab19800-9a0f-439f-bf62-7a7afc5bf958",
+              "name": "workflowLink",
+              "type": "string",
+              "value": "={{ 'https://n8n.gcsagro.com.br' }}/workflow/{{ $('Extrai Erros').item.json.workflowId }}"
+            },
+            {
+              "id": "29daaea5-052b-46d4-8192-141db159bff2",
+              "name": "error.executionId",
+              "type": "string",
+              "value": "={{ $('Extrai Erros').item.json.executionId }}"
+            },
+            {
+              "id": "9e4e553c-c82b-41ec-8ee2-14162cdc3bd8",
+              "name": "executionLink",
+              "type": "string",
+              "value": "={{ 'https://n8n.gcsagro.com.br' }}/workflow/{{ $('Extrai Erros').item.json.workflowId }}/executions/{{ $('Extrai Erros').item.json.executionId }}"
+            },
+            {
+              "id": "7269ea9f-ed49-46cd-89f2-d4a467da529d",
+              "name": "error.finished",
+              "type": "boolean",
+              "value": "={{ $('Extrai Erros').item.json.finished }}"
+            },
+            {
+              "id": "29a6e6d2-5058-4dd9-b2f9-3980a6a9073a",
+              "name": "error.startedAt",
+              "type": "string",
+              "value": "={{ $('Extrai Erros').item.json.startedAt }}"
+            },
+            {
+              "id": "a0ad0e13-5a6e-48db-9a80-74c09434de7f",
+              "name": "error.nodeName",
+              "type": "string",
+              "value": "={{ $('Extrai Erros').item.json.nodeName }}"
+            },
+            {
+              "id": "6c1001d4-a581-4520-9f16-a2c7cf0e1f84",
+              "name": "error.previousNode",
+              "type": "string",
+              "value": "={{ $('Extrai Erros').item.json.source[0].previousNode }}"
+            },
+            {
+              "id": "8c3402ca-3f15-44ae-9b96-ea37c174334c",
+              "name": "rawJson",
+              "type": "string",
+              "value": "={{ JSON.stringify($('Extrai Erros').item.json) }}"
+            },
+            {
+              "id": "ab5f0bf3-2846-4b4e-8104-d80c11849454",
+              "name": "",
+              "value": "",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "fa1cbfe4-e301-477c-a12b-bc8c3ad1fa54",
+      "name": "Seta Diagnosticos",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        -1696,
+        1104
+      ],
+      "typeVersion": 3.4
+    },
+    {
+      "parameters": {
+        "jsCode": "// \u2705 ENTRADA: mesmo payload que voc\u00ea j\u00e1 usa (objeto ou string JSON)\n// \u2705 SA\u00cdDA: { subject, html, whatsapp_message, whatsapp_message_ultra, count }\n\n// 0) Utilidades\nconst tz = 'America/Sao_Paulo';\nconst trunc = (s, n) => {\n  if (!s) return '-';\n  const str = String(s).replace(/\\s+/g, ' ').trim();\n  return str.length <= n ? str : str.slice(0, n - 1).trimEnd() + '\u2026';\n};\nconst firstSentence = (s, n = 160) => {\n  if (!s) return '-';\n  const clean = String(s).replace(/\\s+/g, ' ').trim();\n  const m = clean.match(/(.+?[.!?])\\s|$/);\n  const pick = m && m[1] ? m[1].trim() : clean;\n  return trunc(pick, n);\n};\nconst fmtDate = (iso) => {\n  if (!iso) return '-';\n  try {\n    return new Date(iso).toLocaleString('pt-BR', { timeZone: tz });\n  } catch { return '-'; }\n};\n\n// 1) L\u00ea o payload de erro SEM modificar o JSON de entrada\nconst rawInput = items[0].json;\nconst parsed = typeof rawInput === 'string' ? JSON.parse(rawInput) : rawInput;\nconst errorArray = Array.isArray(parsed) ? parsed : [parsed];\n\n// 2) Monta o HTML (PT-BR) usando somente leitura dos campos existentes (SEU HTML MANTIDO)\nlet htmlSections = '';\n\nfor (const errObj of errorArray) {\n  const {\n    error: {\n      workflowName,\n      executionId,\n      nodeName,\n      previousNode,\n      diagnosis,\n      cause,\n      resolution,\n      startedAt,\n    } = {},\n    workflowLink,\n    executionLink,\n  } = errObj;\n\n  const prev = (previousNode ?? '-') + '';\n  const startedStr = startedAt\n    ? new Date(startedAt).toLocaleString('pt-BR', { timeZone: tz })\n    : '-';\n\n  htmlSections += `\n    <div style=\"border:1px solid #ddd;border-radius:4px;padding:16px;margin-bottom:20px;background:#fafafa;\">\n      <h3 style=\"margin:0 0 10px;color:#c0392b;font-family:Arial,sans-serif;\">\n        \ud83d\uded1 ${workflowName} \u2014 erro no n\u00f3: ${nodeName}\n      </h3>\n      <p style=\"margin:4px 0;font-family:Arial,sans-serif;\">\n        <strong>Workflow:</strong>\n        <a href=\"${workflowLink}\" style=\"color:#2980b9;text-decoration:none;\">${workflowName}</a><br/>\n        <strong>Execu\u00e7\u00e3o:</strong>\n        <a href=\"${executionLink}\" style=\"color:#2980b9;text-decoration:none;\">#${executionId}</a><br/>\n        <strong>N\u00f3 anterior:</strong> ${prev}<br/>\n        <strong>In\u00edcio:</strong> ${startedStr}\n      </p>\n      <hr style=\"border:none;border-top:1px solid #ccc;margin:12px 0;\"/>\n      <h4 style=\"margin:0 0 6px;color:#e67e22;font-family:Arial,sans-serif;\">\ud83d\udd0d Diagn\u00f3stico</h4>\n      <p style=\"margin:4px 0 12px;font-family:Arial,sans-serif;\">${diagnosis ?? '-'}</p>\n      <h4 style=\"margin:0 0 6px;color:#e67e22;font-family:Arial,sans-serif;\">\u2699\ufe0f Causa</h4>\n      <p style=\"margin:4px 0 12px;font-family:Arial,sans-serif;\">${cause ?? '-'}</p>\n      <h4 style=\"margin:0 0 6px;color:#27ae60;font-family:Arial,sans-serif;\">\u2705 Solu\u00e7\u00e3o</h4>\n      <p style=\"white-space:pre-wrap;margin:4px 0;font-family:Arial,sans-serif;\">${resolution ?? '-'}</p>\n    </div>`;\n} // fecha o for\n\n// 3) Cabe\u00e7alho do email\nconst first = errorArray[0]?.error || {};\nconst subject = `\ud83d\udea8 Erro no n8n: ${first.workflowName || '-'} (#${first.executionId || '-'})`;\n\n// 4) HTML final\nconst html = `\n  <div style=\"font-family:Arial,sans-serif;color:#333;background:#fff;padding:20px;\">\n    <h2 style=\"margin-top:0;color:#2c3e50;\">Relat\u00f3rio Autom\u00e1tico de Erro</h2>\n    ${htmlSections}\n  </div>\n`;\n\n// 5) MENSAGENS PARA WHATSAPP (concisa e ultra)\nconst blocks = errorArray.map((e) => {\n  const err = e.error || {};\n  const started = fmtDate(err.startedAt);\n  const workflow = err.workflowName || '-';\n  const node = err.nodeName || '-';\n  const prev = (err.previousNode ?? '-') + '';\n  const execId = err.executionId ? `#${err.executionId}` : '-';\n  const diagnosis = trunc(err.diagnosis || '-', 200);\n  const cause = trunc(err.cause || '-', 160);\n  const resolution = firstSentence(err.resolution || '-', 180);\n\n  const execLink = e.executionLink || '';\n  // const wfLink = e.workflowLink || ''; // opcional\n\n  // Vers\u00e3o \"concisa\"\n  const concise = [\n    `\ud83d\uded1 *${workflow}*`,\n    `N\u00f3: *${node}* ${prev && prev !== '-' ? `(prev: ${prev})` : ''}`.trim(),\n    `Execu\u00e7\u00e3o: *${execId}*${execLink ? `\\n\ud83d\udd17 ${execLink}` : ''}`,\n    `In\u00edcio: ${started}`,\n    diagnosis && diagnosis !== '-' ? `\ud83d\udd0d ${diagnosis}` : null,\n    cause && cause !== '-' ? `\u2699\ufe0f ${cause}` : null,\n    resolution && resolution !== '-' ? `\u2705 ${resolution}` : null,\n  ].filter(Boolean).join('\\n');\n\n  // Vers\u00e3o \"ultra\"\n  const ultra = [\n    `\ud83d\uded1 ${trunc(workflow, 48)} | ${trunc(node, 24)} | ${execId}`,\n    resolution && resolution !== '-' ? `\u2705 ${trunc(resolution, 90)}` : (diagnosis && diagnosis !== '-' ? `\ud83d\udd0d ${trunc(diagnosis, 90)}` : null),\n    execLink ? `\ud83d\udd17 ${execLink}` : null,\n  ].filter(Boolean).join('\\n');\n\n  return { concise, ultra };\n});\n\nconst sep = '\\n\u2014 \u2014 \u2014\\n';\nconst whatsapp_message = blocks.map(b => b.concise).join(sep);\nconst whatsapp_message_ultra = blocks.map(b => b.ultra).join('\\n');\n\n// 6) Retorno \u00fanico com tudo\nreturn [{\n  json: {\n    subject,\n    html,\n    whatsapp_message,\n    whatsapp_message_ultra,\n    count: errorArray.length\n  }\n}];\n"
+      },
+      "id": "a681d5b7-9d2a-46ae-9def-b98b765263f5",
+      "name": "Gera Email",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        -1360,
+        1104
+      ],
+      "typeVersion": 2
+    },
+    {
+      "parameters": {
+        "fromEmail": "=workflow@gcsagro.com.br",
+        "toEmail": "={{ $('Seta Email E Telefone').item.json.TO }}",
+        "subject": "={{ $json.subject }}",
+        "html": "={{ $json.html }}",
+        "options": {
+          "ccEmail": "={{ $('Seta Email E Telefone').item.json.CC }}",
+          "bccEmail": "={{ $('Seta Email E Telefone').item.json.BCC }}"
+        }
+      },
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        -832,
+        864
+      ],
+      "id": "debc1f49-4c90-4b5e-a763-519d46f5bf1b",
+      "name": "Envia Email",
+      "webhookId": "7679ad62-c16b-4d67-8900-f9b9c155c726",
+      "credentials": {
+        "smtp": {
+          "id": "opvAQpWPvz4YEfQq",
+          "name": "SMTP Workflow@gcsagro"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n\"diagnostico\":\"\",\n\"causa\":\"\",\n\"solucao\":\"\"\n}"
+      },
+      "id": "cae79caf-ec5c-46dd-a00a-3c56f3dea2d5",
+      "name": "Estrutura",
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "position": [
+        -1936,
+        1296
+      ],
+      "typeVersion": 1.2
+    },
+    {
+      "parameters": {
+        "jsCode": "// Timezone local\nconst tz = 'America/Sao_Paulo';\n\n// Pega hor\u00e1rio atual em SP\nconst now = new Date(new Date().toLocaleString('en-US', { timeZone: tz }));\nconst hour = now.getHours();\n\n// Permite rodar se N\u00c3O estiver entre 02:00\u201302:59\nconst canProcess = !(hour === 2);\n\nreturn [{\n  json: {\n    canProcess,\n    now: now.toISOString(),\n    hourLocal: hour,\n    tz\n  }\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -2160,
+        240
+      ],
+      "id": "86b4b47b-b8db-4743-9452-6e5069ee74d2",
+      "name": "Trata Horario"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "e85912ed-1926-4be6-8fc2-c3cce761293b",
+              "leftValue": "={{ $json.canProcess }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -1872,
+        240
+      ],
+      "id": "a5eed11b-a5f0-4508-84e4-9733702f9333",
+      "name": "Dentro do Horario"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4.1-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-4.1-mini"
+        },
+        "options": {}
+      },
+      "id": "0212e29f-dd6c-4856-b1bd-c6c79745b9e7",
+      "name": "Modelo 4.1Mini",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "position": [
+        -2192,
+        1296
+      ],
+      "typeVersion": 1.2,
+      "credentials": {
+        "openAiApi": {
+          "id": "kPoquqQrPvZhpkHT",
+          "name": "OpenAi Silvio Latitude"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "45e1443a-fb44-42f8-96ad-423197c7265b",
+              "name": "TO",
+              "type": "string",
+              "value": "daniel.carvalho@gcsagro.com.br"
+            },
+            {
+              "id": "968b05dc-f476-4e13-8166-e62005d0f936",
+              "name": "CC",
+              "type": "string",
+              "value": "leonardo.alves@gcsagro.com.br"
+            },
+            {
+              "id": "570663c5-29c0-44fb-9992-908b7cca8136",
+              "name": "BCC",
+              "type": "string",
+              "value": ""
+            },
+            {
+              "id": "e1342977-8b5e-444a-823a-c8dccb8366dd",
+              "name": "TEL1",
+              "value": "556198313777@c.us",
+              "type": "string"
+            },
+            {
+              "id": "8e52e99d-8fe8-4eee-a91b-86b8cb638691",
+              "name": "TEL2",
+              "value": "556193716080@c.us",
+              "type": "string"
+            },
+            {
+              "id": "9f58cc93-fa32-42db-b49e-5bd3ef0d3110",
+              "name": "TEL3",
+              "value": "556132467905@c.us",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "ca1958f5-8470-46d1-9467-a2e33bdcb672",
+      "name": "Seta Email E Telefone",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        -1488,
+        224
+      ],
+      "typeVersion": 3.4
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        -1088,
+        864
+      ],
+      "id": "0d4ac423-89ba-469b-8ad4-4a7e2fdcdc73",
+      "name": "Email"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        -1088,
+        1024
+      ],
+      "id": "31e5ee28-11e7-4bf8-9e4d-6cbebf844a5e",
+      "name": "Telefone1"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "name": "Telefone2",
+      "typeVersion": 1,
+      "position": [
+        -1088,
+        1184
+      ],
+      "id": "9e2dd244-19b9-44cb-a340-fddf9b386944"
+    },
+    {
+      "parameters": {
+        "requestMethod": "POST",
+        "url": "http://192.168.0.204:3202/responder-avisos",
+        "responseFormat": "string",
+        "options": {},
+        "bodyParametersUi": {
+          "parameter": [
+            {
+              "name": "to",
+              "value": "={{ $('Seta Email E Telefone').item.json.TEL1 }}"
+            },
+            {
+              "name": "message",
+              "value": "={{ $json.whatsapp_message }}"
+            }
+          ]
+        }
+      },
+      "id": "aa03662e-a83b-4c75-a43f-d3e89e9eedfb",
+      "name": "Envia Whats Telefone 1",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 1,
+      "position": [
+        -832,
+        1024
+      ],
+      "retryOnFail": true,
+      "maxTries": 5,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "requestMethod": "POST",
+        "url": "http://192.168.0.204:3202/responder-avisos",
+        "responseFormat": "string",
+        "options": {},
+        "bodyParametersUi": {
+          "parameter": [
+            {
+              "name": "to",
+              "value": "={{ $('Seta Email E Telefone').item.json.TEL2 }}"
+            },
+            {
+              "name": "message",
+              "value": "={{ $json.whatsapp_message }}"
+            }
+          ]
+        }
+      },
+      "id": "9149b59c-46d6-4940-a34d-7318967cfaed",
+      "name": "Envia Whats Telefone2",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 1,
+      "position": [
+        -832,
+        1184
+      ],
+      "retryOnFail": true,
+      "maxTries": 5,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "// ===========================================\n// Filtro de Deduplica\u00e7\u00e3o (Smart Debounce)\n// ===========================================\n\nconst itemsToProcess = [];\nconst WINDOW_MS = 10 * 60 * 1000; // 10 minutos\n\nlet lastErrors = {};\nlet useStatic = false;\nlet staticDataReference;\n\ntry {\n    // Tenta acessar dados est\u00e1ticos globais usando a sintaxe Nova ($)\n    staticDataReference = $getWorkflowStaticData('global');\n    lastErrors = staticDataReference.lastErrors || {};\n    useStatic = true;\n} catch (e) {\n    try {\n        // Fallback para sintaxe antiga (sem $)\n        staticDataReference = getWorkflowStaticData('global');\n        lastErrors = staticDataReference.lastErrors || {};\n        useStatic = true;\n    } catch (e2) {\n         console.log(\"Aviso: Static Data indispon\u00edvel. Debounce desativado.\");\n    }\n}\n\nconst now = Date.now();\n\nfor (const item of items) {\n  const err = item.json;\n  \n  // Chave \u00danica\n  const key = `${err.workflowId}:${err.nodeName}:${err.errorMessage}`;\n  \n  const lastSeen = lastErrors[key] || 0;\n\n  if (now - lastSeen > WINDOW_MS) {\n    // Processar este item\n    itemsToProcess.push(item);\n    \n    // Atualiza tabela local\n    lastErrors[key] = now;\n  }\n}\n\n// Persistir se poss\u00edvel\nif (useStatic && staticDataReference) {\n    // Limpeza\n    const cleanErrors = {};\n    for (const k in lastErrors) {\n      if (Date.now() - lastErrors[k] < WINDOW_MS) {\n        cleanErrors[k] = lastErrors[k];\n      }\n    }\n    staticDataReference.lastErrors = cleanErrors;\n}\n\nreturn itemsToProcess;\n"
+      },
+      "id": "04762865-5162-483f-9558-101e5c7312bb",
+      "name": "Filtro de Deduplicacao",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -2384,
+        1104
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "26b4d2a3-9cc7-4a7d-9633-6aa96b1f4248",
+      "name": "Telefone3",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        -1088,
+        1344
+      ]
+    },
+    {
+      "parameters": {
+        "requestMethod": "POST",
+        "url": "http://192.168.0.204:3202/responder-avisos",
+        "responseFormat": "string",
+        "options": {},
+        "bodyParametersUi": {
+          "parameter": [
+            {
+              "name": "to",
+              "value": "={{ $('Seta Email E Telefone').item.json.TEL3 }}"
+            },
+            {
+              "name": "message",
+              "value": "={{ $json.whatsapp_message }}"
+            }
+          ]
+        }
+      },
+      "id": "2719ac6f-753e-4e6e-a988-1fa4ef2a9208",
+      "name": "Envia Whats Telefone 3",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 1,
+      "position": [
+        -832,
+        1344
+      ],
+      "retryOnFail": true,
+      "maxTries": 5,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "\nIF NOT EXISTS (SELECT * FROM sysobjects WHERE name='TB_N8N_ERROR_LOG' and xtype='U')\nBEGIN\n    CREATE TABLE TB_N8N_ERROR_LOG (\n        ID INT IDENTITY(1,1) PRIMARY KEY,\n        WORKFLOW_NAME NVARCHAR(255),\n        WORKFLOW_ID NVARCHAR(50),\n        EXECUTION_ID NVARCHAR(50),\n        NODE_NAME NVARCHAR(255),\n        ERROR_MESSAGE NVARCHAR(MAX),\n        DIAGNOSIS NVARCHAR(MAX),\n        CAUSE NVARCHAR(MAX),\n        RESOLUTION NVARCHAR(MAX),\n        CREATED_AT DATETIME DEFAULT GETDATE()\n    );\nEND\n\nINSERT INTO TB_N8N_ERROR_LOG (\n    WORKFLOW_NAME, WORKFLOW_ID, EXECUTION_ID, NODE_NAME, \n    ERROR_MESSAGE, DIAGNOSIS, CAUSE, RESOLUTION\n) VALUES (\n    '{{ ($('Extrai Erros').item.json.workflowName || '').replace(/'/g, \"''\") }}', \n    '{{ ($('Extrai Erros').item.json.workflowId || '').replace(/'/g, \"''\") }}', \n    '{{ ($('Extrai Erros').item.json.executionId || '').replace(/'/g, \"''\") }}', \n    '{{ ($('Extrai Erros').item.json.nodeName || '').replace(/'/g, \"''\") }}', \n    '{{ ($('Extrai Erros').item.json.errorMessage || '').replace(/'/g, \"''\") }}', \n    '{{ ($json.output.diagnostico || '').replace(/'/g, \"''\") }}', \n    '{{ ($json.output.causa || '').replace(/'/g, \"''\") }}', \n    '{{ ($json.output.solucao || '').replace(/'/g, \"''\") }}'\n);\n"
+      },
+      "id": "28e47996-41e3-4d58-90a0-c8e6535f6089",
+      "name": "Grava Log SQL",
+      "type": "n8n-nodes-base.microsoftSql",
+      "typeVersion": 1,
+      "position": [
+        -1696,
+        1328
+      ],
+      "credentials": {
+        "microsoftSql": {
+          "id": "nENXwCqIDPtcL8m7",
+          "name": "Microsoft SQL account"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Tenta recuperar dados do usuario do contexto global\nconst userPhone = $execution.customData?.userPhone;\nconst userName = $execution.customData?.userName || 'Usu\u00e1rio';\n\nreturn {\n    json: {\n        userPhone,\n        userName,\n        hasUser: !!userPhone\n    }\n};"
+      },
+      "id": "964e90ce-fc20-48a1-9e16-1deeeba7c4c7",
+      "name": "Extrai Contexto",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -208,
+        1200
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "c94078e9-a4a1-487c-8c92-6ed8cbc85c3f",
+              "leftValue": "={{ $json.hasUser }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "12dd5132-2004-4eb8-8d5b-36b418964e76",
+      "name": "Tem Usuario?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        48,
+        1200
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://graph.facebook.com/v24.0/919320734605969/messages",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{\n{\n  \"messaging_product\": \"whatsapp\",\n  \"recipient_type\": \"individual\",\n  \"to\": $json.userPhone,\n  \"type\": \"text\",\n  \"text\": {\n    \"body\": \"\ud83e\udd16 *Assistente Virtual*\\n\\nOcorreu um erro interno ao processar sua solicita\u00e7\u00e3o. Nossos engenheiros foram notificados. \ud83d\udc77\\n\\nPor favor, tente novamente em alguns instantes.\"\n  }\n}\n}}",
+        "options": {}
+      },
+      "id": "bee8c7cc-bfbe-43c7-937b-b2baca1ac579",
+      "name": "Avisa Usuario",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        288,
+        1200
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "MqwiYsaydDm9I38O",
+          "name": "Meta WhatsApp Cloud API"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Remove Manual Exec": {
+      "main": [
+        [
+          {
+            "node": "Extrai Erros",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extrai Erros": {
+      "main": [
+        [
+          {
+            "node": "Filtro de Deduplicacao",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Extrai Contexto",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Agente de Erros": {
+      "main": [
+        [
+          {
+            "node": "Seta Diagnosticos",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Grava Log SQL",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Acionador de Erro": {
+      "main": [
+        [
+          {
+            "node": "Trata Horario",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Seta Diagnosticos": {
+      "main": [
+        [
+          {
+            "node": "Gera Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gera Email": {
+      "main": [
+        [
+          {
+            "node": "Email",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Telefone1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Telefone2",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Telefone3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Estrutura": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Agente de Erros",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Trata Horario": {
+      "main": [
+        [
+          {
+            "node": "Dentro do Horario",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Dentro do Horario": {
+      "main": [
+        [
+          {
+            "node": "Seta Email E Telefone",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Modelo 4.1Mini": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Agente de Erros",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Seta Email E Telefone": {
+      "main": [
+        [
+          {
+            "node": "Remove Manual Exec",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Email": {
+      "main": [
+        [
+          {
+            "node": "Envia Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Telefone1": {
+      "main": [
+        [
+          {
+            "node": "Envia Whats Telefone 1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Telefone2": {
+      "main": [
+        [
+          {
+            "node": "Envia Whats Telefone2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filtro de Deduplicacao": {
+      "main": [
+        [
+          {
+            "node": "Agente de Erros",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Telefone3": {
+      "main": [
+        [
+          {
+            "node": "Envia Whats Telefone 3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extrai Contexto": {
+      "main": [
+        [
+          {
+            "node": "Tem Usuario?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Tem Usuario?": {
+      "main": [
+        [
+          {
+            "node": "Avisa Usuario",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
+  },
+  "staticData": {
+    "global": {
+      "lastErrors": {
+        "PQ2ZXp7ogcOftI91:Busca Pendentes:Failed to cancel request in 5000ms": 1770411700410,
+        "fmj1xlMLXvPlRhXg:Buscar CPFs pendentes2:Failed to connect to 192.168.0.8:1433 in 15000ms": 1770411723248,
+        "LqOiAnkENWHuu45V:Busca NF Prontas:Failed to connect to 192.168.0.8:1433 in 15000ms": 1770411747694
+      }
+    }
+  },
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {
+    "Acionador de Erro": [
+      {
+        "json": {
+          "execution": {
+            "id": "13509",
+            "url": "http://localhost:5678/workflow/0HSBQlSFqiUdQDAe/executions/13509",
+            "error": {
+              "level": "warning",
+              "tags": {},
+              "description": "Try changing the type of the comparison.",
+              "timestamp": 1766858051860,
+              "context": {
+                "itemIndex": 0
+              },
+              "functionality": "regular",
+              "name": "NodeOperationError",
+              "node": {
+                "parameters": {
+                  "conditions": {
+                    "options": {
+                      "caseSensitive": true,
+                      "leftValue": "",
+                      "typeValidation": "loose",
+                      "version": 2
+                    },
+                    "conditions": [
+                      {
+                        "id": "f0fb55cf-4879-4ebe-9331-1dd85e957703",
+                        "leftValue": "={{$node[\"Verifica Numero de Opcoes Cli\"].json[\"numero_clientes\"]}}",
+                        "rightValue": "={{$node[\"Seta Variaveis Iniciais\"].json[\"mensagem\"]}}",
+                        "operator": {
+                          "type": "number",
+                          "operation": "gte"
+                        }
+                      }
+                    ],
+                    "combinator": "and"
+                  },
+                  "looseTypeValidation": true,
+                  "options": {}
+                },
+                "type": "n8n-nodes-base.if",
+                "typeVersion": 2.2,
+                "position": [
+                  -6768,
+                  1792
+                ],
+                "id": "a5362af7-7f4e-48b0-8b0e-13bbd2dc8dd1",
+                "name": "Digitou Opc Cli Correta?",
+                "alwaysOutputData": true
+              },
+              "messages": [],
+              "message": "Conversion error: the string 'Jahaj' can't be converted to a number [condition 0, item 0]",
+              "stack": "NodeOperationError: Conversion error: the string 'Jahaj' can't be converted to a number [condition 0, item 0]\n    at extractValue (/usr/local/lib/node_modules/n8n/node_modules/.pnpm/n8n-core@file+packages+core_@opentelemetry+api@1.9.0_@opentelemetry+sdk-trace-base@1.30_ec37920eb95917b28efaa783206b20f3/node_modules/n8n-core/src/execution-engine/node-execution-context/utils/extract-value.ts:211:9)\n    at ExecuteContext._getNodeParameter (/usr/local/lib/node_modules/n8n/node_modules/.pnpm/n8n-core@file+packages+core_@opentelemetry+api@1.9.0_@opentelemetry+sdk-trace-base@1.30_ec37920eb95917b28efaa783206b20f3/node_modules/n8n-core/src/execution-engine/node-execution-context/node-execution-context.ts:490:29)\n    at ExecuteContext.getNodeParameter (/usr/local/lib/node_modules/n8n/node_modules/.pnpm/n8n-core@file+packages+core_@opentelemetry+api@1.9.0_@opentelemetry+sdk-trace-base@1.30_ec37920eb95917b28efaa783206b20f3/node_modules/n8n-core/src/execution-engine/node-execution-context/execute-context.ts:128:9)\n    at /usr/local/lib/node_modules/n8n/node_modules/.pnpm/n8n-nodes-base@file+packages+nodes-base_@aws-sdk+credential-providers@3.808.0_asn1.js@5_8da18263ca0574b0db58d4fefd8173ce/node_modules/n8n-nodes-base/nodes/If/V2/IfV2.node.ts:96:18\n    at Array.forEach (<anonymous>)\n    at ExecuteContext.execute (/usr/local/lib/node_modules/n8n/node_modules/.pnpm/n8n-nodes-base@file+packages+nodes-base_@aws-sdk+credential-providers@3.808.0_asn1.js@5_8da18263ca0574b0db58d4fefd8173ce/node_modules/n8n-nodes-base/nodes/If/V2/IfV2.node.ts:88:23)\n    at WorkflowExecute.executeNode (/usr/local/lib/node_modules/n8n/node_modules/.pnpm/n8n-core@file+packages+core_@opentelemetry+api@1.9.0_@opentelemetry+sdk-trace-base@1.30_ec37920eb95917b28efaa783206b20f3/node_modules/n8n-core/src/execution-engine/workflow-execute.ts:1045:31)\n    at WorkflowExecute.runNode (/usr/local/lib/node_modules/n8n/node_modules/.pnpm/n8n-core@file+packages+core_@opentelemetry+api@1.9.0_@opentelemetry+sdk-trace-base@1.30_ec37920eb95917b28efaa783206b20f3/node_modules/n8n-core/src/execution-engine/workflow-execute.ts:1226:22)\n    at /usr/local/lib/node_modules/n8n/node_modules/.pnpm/n8n-core@file+packages+core_@opentelemetry+api@1.9.0_@opentelemetry+sdk-trace-base@1.30_ec37920eb95917b28efaa783206b20f3/node_modules/n8n-core/src/execution-engine/workflow-execute.ts:1662:38\n    at /usr/local/lib/node_modules/n8n/node_modules/.pnpm/n8n-core@file+packages+core_@opentelemetry+api@1.9.0_@opentelemetry+sdk-trace-base@1.30_ec37920eb95917b28efaa783206b20f3/node_modules/n8n-core/src/execution-engine/workflow-execute.ts:2274:11"
+            },
+            "lastNodeExecuted": "Digitou Opc Cli Correta?",
+            "mode": "webhook",
+            "executionContext": {
+              "version": 1,
+              "establishedAt": 1766858051650,
+              "source": "webhook",
+              "triggerNode": {
+                "name": "Webhook - Entrada TI",
+                "type": "n8n-nodes-base.webhook"
+              }
+            }
+          },
+          "workflow": {
+            "id": "0HSBQlSFqiUdQDAe",
+            "name": "001 - Chatbot - Pedidos Comercial SMT"
+          }
+        }
+      }
+    ]
+  },
+  "versionId": "5172dd66-d5c7-43d7-b260-acc2d8141643",
+  "activeVersionId": "e18b56f0-9e32-4195-9859-2992a4ecd34c",
+  "versionCounter": 282,
+  "triggerCount": 0,
+  "shared": [
+    {
+      "updatedAt": "2025-12-26T22:07:25.601Z",
+      "createdAt": "2025-12-26T22:07:25.601Z",
+      "role": "workflow:owner",
+      "workflowId": "BNt9cLp1IJvpBdyg",
+      "projectId": "KfMM719qOiW2uYQt",
+      "project": {
+        "updatedAt": "2025-12-26T22:11:14.375Z",
+        "createdAt": "2025-12-26T22:03:03.688Z",
+        "id": "KfMM719qOiW2uYQt",
+        "name": "Ti GCS <ti@gcsagro.com.br>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "creatorId": "ce465cd5-d65e-4c22-bca0-647a3d53e5a7",
+        "projectRelations": [
+          {
+            "updatedAt": "2025-12-26T22:03:03.688Z",
+            "createdAt": "2025-12-26T22:03:03.688Z",
+            "userId": "ce465cd5-d65e-4c22-bca0-647a3d53e5a7",
+            "projectId": "KfMM719qOiW2uYQt",
+            "user": {
+              "updatedAt": "2026-02-06T11:07:34.467Z",
+              "createdAt": "2025-12-26T22:02:58.354Z",
+              "id": "ce465cd5-d65e-4c22-bca0-647a3d53e5a7",
+              "email": "ti@gcsagro.com.br",
+              "firstName": "Ti",
+              "lastName": "GCS",
+              "personalizationAnswers": {
+                "version": "v4",
+                "personalization_survey_submitted_at": "2025-12-26T22:11:48.077Z",
+                "personalization_survey_n8n_version": "1.121.3",
+                "companyIndustryExtended": [
+                  "it-industry"
+                ],
+                "companyType": "other"
+              },
+              "settings": {
+                "userActivated": true,
+                "easyAIWorkflowOnboarded": true,
+                "firstSuccessfulWorkflowId": "2H8bqWyPEIxRrOtK",
+                "userActivatedAt": 1766824222124,
+                "npsSurvey": {
+                  "responded": true,
+                  "lastShownAt": 1767819022407
+                }
+              },
+              "disabled": false,
+              "mfaEnabled": false,
+              "lastActiveAt": "2026-02-06",
+              "isPending": false
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "tags": [
+    {
+      "updatedAt": "2025-12-27T14:00:33.128Z",
+      "createdAt": "2025-12-27T14:00:33.128Z",
+      "id": "FTy0b60ywGt8xFgN",
+      "name": "Ferramentas"
+    }
+  ],
+  "activeVersion": {
+    "updatedAt": "2026-02-06T18:14:05.247Z",
+    "createdAt": "2026-02-06T18:14:05.247Z",
+    "versionId": "e18b56f0-9e32-4195-9859-2992a4ecd34c",
+    "workflowId": "BNt9cLp1IJvpBdyg",
+    "nodes": [
+      {
+        "parameters": {
+          "conditions": {
+            "options": {
+              "version": 2,
+              "leftValue": "",
+              "caseSensitive": false,
+              "typeValidation": "strict"
+            },
+            "conditions": [
+              {
+                "id": "9b2f3ff3-db9c-406b-a97f-37620dc5fab9",
+                "operator": {
+                  "type": "boolean",
+                  "operation": "true",
+                  "singleValue": true
+                },
+                "leftValue": "={{ ($('Acionador de Erro').item.json.execution?.mode || 'unknown') !== 'manual' }}",
+                "rightValue": "manual"
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {
+            "ignoreCase": true
+          }
+        },
+        "id": "d9d3f469-2e24-4007-b9b4-e8c36015b2e1",
+        "name": "Remove Manual Exec",
+        "type": "n8n-nodes-base.if",
+        "position": [
+          -1104,
+          224
+        ],
+        "typeVersion": 2.2
+      },
+      {
+        "parameters": {
+          "jsCode": "// =======================================================\n// Extrai erros usando SOMENTE o payload do Error Trigger\n// Fonte \u00fanica: n\u00f3 \"Acionador de Erro\"\n// =======================================================\n\n// 1) Payload bruto do Error Trigger (referenciado)\nconst errorTrigger = $('Acionador de Erro').item.json;\n\n// 2) Execu\u00e7\u00e3o e workflow\nconst execution = errorTrigger.execution || {};\nconst workflow  = errorTrigger.workflow || {};\nconst err       = execution.error || {};\n\n// 3) Metadata da execu\u00e7\u00e3o\nconst meta = {\n  executionId: execution.id || null,\n  mode: execution.mode || null,\n  finished: true,\n\n  workflowId: workflow.id || null,\n  workflowName: workflow.name || null,\n\n  lastNodeExecuted: execution.lastNodeExecuted || null,\n  source: execution.executionContext?.source || null,\n\n  startedAt: execution.executionContext?.establishedAt\n    ? new Date(execution.executionContext.establishedAt).toISOString()\n    : null,\n};\n\n// 4) Metadata do erro\nconst nodeDef = err.node || {};\n\nconst errorItem = {\n  ...meta,\n\n  nodeName: nodeDef.name || meta.lastNodeExecuted,\n  nodeId: nodeDef.id || null,\n  nodeType: nodeDef.type || null,\n\n  errorName: err.name || null,\n  errorMessage: err.message || null,\n  errorDescription: err.description || null,\n  messages: err.messages || null,\n  context: err.context || null,\n  stack: err.stack || null,\n\n  parameters: nodeDef.parameters || null,\n};\n\n// 5) Retorno padronizado (1 erro = 1 item)\nreturn [\n  {\n    json: errorItem\n  }\n];\n"
+        },
+        "id": "5b84c041-0c94-4ec8-a0e7-57129f1eb4a3",
+        "name": "Extrai Erros",
+        "type": "n8n-nodes-base.code",
+        "position": [
+          -832,
+          208
+        ],
+        "typeVersion": 2
+      },
+      {
+        "parameters": {
+          "promptType": "define",
+          "text": "=Voc\u00ea pode me ajudar com este erro que ocorreu no meu workflow do n8n? {{ JSON.stringify($json) }}",
+          "hasOutputParser": true,
+          "options": {
+            "systemMessage": "Voc\u00ea \u00e9 um especialista experiente em n8n, com especializa\u00e7\u00f5es em gerenciamento de inst\u00e2ncias e workflows do n8n. O usu\u00e1rio fornecer\u00e1 um objeto JSON de erro detalhado e seu objetivo \u00e9 revisar, analisar e compreender o erro e, usando sua experi\u00eancia, diagnosticar o problema e fornecer ao usu\u00e1rio um relat\u00f3rio detalhado  mas bem objetivo, com o minimo de palavras possiveis para a compreens\u00e3o, com seu diagn\u00f3stico, causa e solu\u00e7\u00e3o, para que ele entenda e possa corrigir o problema imediatamente."
+          }
+        },
+        "id": "a1ce31fc-30aa-428c-8434-83b8810f5a69",
+        "name": "Agente de Erros",
+        "type": "@n8n/n8n-nodes-langchain.agent",
+        "position": [
+          -2128,
+          656
+        ],
+        "typeVersion": 1.8
+      },
+      {
+        "parameters": {},
+        "id": "7c9cb260-175b-4624-9556-9a6373208309",
+        "name": "Acionador de Erro",
+        "type": "n8n-nodes-base.errorTrigger",
+        "position": [
+          -2400,
+          240
+        ],
+        "typeVersion": 1
+      },
+      {
+        "parameters": {
+          "assignments": {
+            "assignments": [
+              {
+                "id": "fac5fbee-d63d-4148-b047-5ed5af4f2574",
+                "name": "error.diagnosis",
+                "type": "string",
+                "value": "={{ $json.output.diagnostico }}"
+              },
+              {
+                "id": "ece9388d-f667-4984-a143-7241f622fe76",
+                "name": "error.cause",
+                "type": "string",
+                "value": "={{ $json.output.causa }}"
+              },
+              {
+                "id": "acb6b34a-a651-42fc-a44a-331b2e0d745c",
+                "name": "error.resolution",
+                "type": "string",
+                "value": "={{ $json.output.solucao }}"
+              },
+              {
+                "id": "c765754b-d6d5-4592-ac3f-99a350bc3c19",
+                "name": "error.workflowName",
+                "type": "string",
+                "value": "={{ $('Extrai Erros').item.json.workflowName }}"
+              },
+              {
+                "id": "dabebc62-3e0c-4d22-afbf-54ba66a912fb",
+                "name": "error.workflowId",
+                "type": "string",
+                "value": "={{ $('Extrai Erros').item.json.workflowId }}"
+              },
+              {
+                "id": "6ab19800-9a0f-439f-bf62-7a7afc5bf958",
+                "name": "workflowLink",
+                "type": "string",
+                "value": "={{ 'https://n8n.gcsagro.com.br' }}/workflow/{{ $('Extrai Erros').item.json.workflowId }}"
+              },
+              {
+                "id": "29daaea5-052b-46d4-8192-141db159bff2",
+                "name": "error.executionId",
+                "type": "string",
+                "value": "={{ $('Extrai Erros').item.json.executionId }}"
+              },
+              {
+                "id": "9e4e553c-c82b-41ec-8ee2-14162cdc3bd8",
+                "name": "executionLink",
+                "type": "string",
+                "value": "={{ 'https://n8n.gcsagro.com.br' }}/workflow/{{ $('Extrai Erros').item.json.workflowId }}/executions/{{ $('Extrai Erros').item.json.executionId }}"
+              },
+              {
+                "id": "7269ea9f-ed49-46cd-89f2-d4a467da529d",
+                "name": "error.finished",
+                "type": "boolean",
+                "value": "={{ $('Extrai Erros').item.json.finished }}"
+              },
+              {
+                "id": "29a6e6d2-5058-4dd9-b2f9-3980a6a9073a",
+                "name": "error.startedAt",
+                "type": "string",
+                "value": "={{ $('Extrai Erros').item.json.startedAt }}"
+              },
+              {
+                "id": "a0ad0e13-5a6e-48db-9a80-74c09434de7f",
+                "name": "error.nodeName",
+                "type": "string",
+                "value": "={{ $('Extrai Erros').item.json.nodeName }}"
+              },
+              {
+                "id": "6c1001d4-a581-4520-9f16-a2c7cf0e1f84",
+                "name": "error.previousNode",
+                "type": "string",
+                "value": "={{ $('Extrai Erros').item.json.source[0].previousNode }}"
+              },
+              {
+                "id": "8c3402ca-3f15-44ae-9b96-ea37c174334c",
+                "name": "rawJson",
+                "type": "string",
+                "value": "={{ JSON.stringify($('Extrai Erros').item.json) }}"
+              },
+              {
+                "id": "ab5f0bf3-2846-4b4e-8104-d80c11849454",
+                "name": "",
+                "value": "",
+                "type": "string"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "id": "fa1cbfe4-e301-477c-a12b-bc8c3ad1fa54",
+        "name": "Seta Diagnosticos",
+        "type": "n8n-nodes-base.set",
+        "position": [
+          -1680,
+          656
+        ],
+        "typeVersion": 3.4
+      },
+      {
+        "parameters": {
+          "jsCode": "// \u2705 ENTRADA: mesmo payload que voc\u00ea j\u00e1 usa (objeto ou string JSON)\n// \u2705 SA\u00cdDA: { subject, html, whatsapp_message, whatsapp_message_ultra, count }\n\n// 0) Utilidades\nconst tz = 'America/Sao_Paulo';\nconst trunc = (s, n) => {\n  if (!s) return '-';\n  const str = String(s).replace(/\\s+/g, ' ').trim();\n  return str.length <= n ? str : str.slice(0, n - 1).trimEnd() + '\u2026';\n};\nconst firstSentence = (s, n = 160) => {\n  if (!s) return '-';\n  const clean = String(s).replace(/\\s+/g, ' ').trim();\n  const m = clean.match(/(.+?[.!?])\\s|$/);\n  const pick = m && m[1] ? m[1].trim() : clean;\n  return trunc(pick, n);\n};\nconst fmtDate = (iso) => {\n  if (!iso) return '-';\n  try {\n    return new Date(iso).toLocaleString('pt-BR', { timeZone: tz });\n  } catch { return '-'; }\n};\n\n// 1) L\u00ea o payload de erro SEM modificar o JSON de entrada\nconst rawInput = items[0].json;\nconst parsed = typeof rawInput === 'string' ? JSON.parse(rawInput) : rawInput;\nconst errorArray = Array.isArray(parsed) ? parsed : [parsed];\n\n// 2) Monta o HTML (PT-BR) usando somente leitura dos campos existentes (SEU HTML MANTIDO)\nlet htmlSections = '';\n\nfor (const errObj of errorArray) {\n  const {\n    error: {\n      workflowName,\n      executionId,\n      nodeName,\n      previousNode,\n      diagnosis,\n      cause,\n      resolution,\n      startedAt,\n    } = {},\n    workflowLink,\n    executionLink,\n  } = errObj;\n\n  const prev = (previousNode ?? '-') + '';\n  const startedStr = startedAt\n    ? new Date(startedAt).toLocaleString('pt-BR', { timeZone: tz })\n    : '-';\n\n  htmlSections += `\n    <div style=\"border:1px solid #ddd;border-radius:4px;padding:16px;margin-bottom:20px;background:#fafafa;\">\n      <h3 style=\"margin:0 0 10px;color:#c0392b;font-family:Arial,sans-serif;\">\n        \ud83d\uded1 ${workflowName} \u2014 erro no n\u00f3: ${nodeName}\n      </h3>\n      <p style=\"margin:4px 0;font-family:Arial,sans-serif;\">\n        <strong>Workflow:</strong>\n        <a href=\"${workflowLink}\" style=\"color:#2980b9;text-decoration:none;\">${workflowName}</a><br/>\n        <strong>Execu\u00e7\u00e3o:</strong>\n        <a href=\"${executionLink}\" style=\"color:#2980b9;text-decoration:none;\">#${executionId}</a><br/>\n        <strong>N\u00f3 anterior:</strong> ${prev}<br/>\n        <strong>In\u00edcio:</strong> ${startedStr}\n      </p>\n      <hr style=\"border:none;border-top:1px solid #ccc;margin:12px 0;\"/>\n      <h4 style=\"margin:0 0 6px;color:#e67e22;font-family:Arial,sans-serif;\">\ud83d\udd0d Diagn\u00f3stico</h4>\n      <p style=\"margin:4px 0 12px;font-family:Arial,sans-serif;\">${diagnosis ?? '-'}</p>\n      <h4 style=\"margin:0 0 6px;color:#e67e22;font-family:Arial,sans-serif;\">\u2699\ufe0f Causa</h4>\n      <p style=\"margin:4px 0 12px;font-family:Arial,sans-serif;\">${cause ?? '-'}</p>\n      <h4 style=\"margin:0 0 6px;color:#27ae60;font-family:Arial,sans-serif;\">\u2705 Solu\u00e7\u00e3o</h4>\n      <p style=\"white-space:pre-wrap;margin:4px 0;font-family:Arial,sans-serif;\">${resolution ?? '-'}</p>\n    </div>`;\n} // fecha o for\n\n// 3) Cabe\u00e7alho do email\nconst first = errorArray[0]?.error || {};\nconst subject = `\ud83d\udea8 Erro no n8n: ${first.workflowName || '-'} (#${first.executionId || '-'})`;\n\n// 4) HTML final\nconst html = `\n  <div style=\"font-family:Arial,sans-serif;color:#333;background:#fff;padding:20px;\">\n    <h2 style=\"margin-top:0;color:#2c3e50;\">Relat\u00f3rio Autom\u00e1tico de Erro</h2>\n    ${htmlSections}\n  </div>\n`;\n\n// 5) MENSAGENS PARA WHATSAPP (concisa e ultra)\nconst blocks = errorArray.map((e) => {\n  const err = e.error || {};\n  const started = fmtDate(err.startedAt);\n  const workflow = err.workflowName || '-';\n  const node = err.nodeName || '-';\n  const prev = (err.previousNode ?? '-') + '';\n  const execId = err.executionId ? `#${err.executionId}` : '-';\n  const diagnosis = trunc(err.diagnosis || '-', 200);\n  const cause = trunc(err.cause || '-', 160);\n  const resolution = firstSentence(err.resolution || '-', 180);\n\n  const execLink = e.executionLink || '';\n  // const wfLink = e.workflowLink || ''; // opcional\n\n  // Vers\u00e3o \"concisa\"\n  const concise = [\n    `\ud83d\uded1 *${workflow}*`,\n    `N\u00f3: *${node}* ${prev && prev !== '-' ? `(prev: ${prev})` : ''}`.trim(),\n    `Execu\u00e7\u00e3o: *${execId}*${execLink ? `\\n\ud83d\udd17 ${execLink}` : ''}`,\n    `In\u00edcio: ${started}`,\n    diagnosis && diagnosis !== '-' ? `\ud83d\udd0d ${diagnosis}` : null,\n    cause && cause !== '-' ? `\u2699\ufe0f ${cause}` : null,\n    resolution && resolution !== '-' ? `\u2705 ${resolution}` : null,\n  ].filter(Boolean).join('\\n');\n\n  // Vers\u00e3o \"ultra\"\n  const ultra = [\n    `\ud83d\uded1 ${trunc(workflow, 48)} | ${trunc(node, 24)} | ${execId}`,\n    resolution && resolution !== '-' ? `\u2705 ${trunc(resolution, 90)}` : (diagnosis && diagnosis !== '-' ? `\ud83d\udd0d ${trunc(diagnosis, 90)}` : null),\n    execLink ? `\ud83d\udd17 ${execLink}` : null,\n  ].filter(Boolean).join('\\n');\n\n  return { concise, ultra };\n});\n\nconst sep = '\\n\u2014 \u2014 \u2014\\n';\nconst whatsapp_message = blocks.map(b => b.concise).join(sep);\nconst whatsapp_message_ultra = blocks.map(b => b.ultra).join('\\n');\n\n// 6) Retorno \u00fanico com tudo\nreturn [{\n  json: {\n    subject,\n    html,\n    whatsapp_message,\n    whatsapp_message_ultra,\n    count: errorArray.length\n  }\n}];\n"
+        },
+        "id": "a681d5b7-9d2a-46ae-9def-b98b765263f5",
+        "name": "Gera Email",
+        "type": "n8n-nodes-base.code",
+        "position": [
+          -1344,
+          656
+        ],
+        "typeVersion": 2
+      },
+      {
+        "parameters": {
+          "fromEmail": "=workflow@gcsagro.com.br",
+          "toEmail": "={{ $('Seta Email E Telefone').item.json.TO }}",
+          "subject": "={{ $json.subject }}",
+          "html": "={{ $json.html }}",
+          "options": {
+            "ccEmail": "={{ $('Seta Email E Telefone').item.json.CC }}",
+            "bccEmail": "={{ $('Seta Email E Telefone').item.json.BCC }}"
+          }
+        },
+        "type": "n8n-nodes-base.emailSend",
+        "typeVersion": 2.1,
+        "position": [
+          -816,
+          416
+        ],
+        "id": "debc1f49-4c90-4b5e-a763-519d46f5bf1b",
+        "name": "Envia Email",
+        "webhookId": "7679ad62-c16b-4d67-8900-f9b9c155c726",
+        "credentials": {
+          "smtp": {
+            "id": "opvAQpWPvz4YEfQq",
+            "name": "SMTP Workflow@gcsagro"
+          }
+        },
+        "onError": "continueRegularOutput"
+      },
+      {
+        "parameters": {
+          "jsonSchemaExample": "{\n\"diagnostico\":\"\",\n\"causa\":\"\",\n\"solucao\":\"\"\n}"
+        },
+        "id": "cae79caf-ec5c-46dd-a00a-3c56f3dea2d5",
+        "name": "Estrutura",
+        "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+        "position": [
+          -1920,
+          848
+        ],
+        "typeVersion": 1.2
+      },
+      {
+        "parameters": {
+          "jsCode": "// Timezone local\nconst tz = 'America/Sao_Paulo';\n\n// Pega hor\u00e1rio atual em SP\nconst now = new Date(new Date().toLocaleString('en-US', { timeZone: tz }));\nconst hour = now.getHours();\n\n// Permite rodar se N\u00c3O estiver entre 02:00\u201302:59\nconst canProcess = !(hour === 2);\n\nreturn [{\n  json: {\n    canProcess,\n    now: now.toISOString(),\n    hourLocal: hour,\n    tz\n  }\n}];\n"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          -2160,
+          240
+        ],
+        "id": "86b4b47b-b8db-4743-9452-6e5069ee74d2",
+        "name": "Trata Horario"
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict",
+              "version": 2
+            },
+            "conditions": [
+              {
+                "id": "e85912ed-1926-4be6-8fc2-c3cce761293b",
+                "leftValue": "={{ $json.canProcess }}",
+                "rightValue": "",
+                "operator": {
+                  "type": "boolean",
+                  "operation": "true",
+                  "singleValue": true
+                }
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.2,
+        "position": [
+          -1872,
+          240
+        ],
+        "id": "a5eed11b-a5f0-4508-84e4-9733702f9333",
+        "name": "Dentro do Horario"
+      },
+      {
+        "parameters": {
+          "model": {
+            "__rl": true,
+            "value": "gpt-4.1-mini",
+            "mode": "list",
+            "cachedResultName": "gpt-4.1-mini"
+          },
+          "options": {}
+        },
+        "id": "0212e29f-dd6c-4856-b1bd-c6c79745b9e7",
+        "name": "Modelo 4.1Mini",
+        "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+        "position": [
+          -2176,
+          848
+        ],
+        "typeVersion": 1.2,
+        "credentials": {
+          "openAiApi": {
+            "id": "kPoquqQrPvZhpkHT",
+            "name": "OpenAi Silvio Latitude"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "assignments": {
+            "assignments": [
+              {
+                "id": "45e1443a-fb44-42f8-96ad-423197c7265b",
+                "name": "TO",
+                "type": "string",
+                "value": "daniel.carvalho@gcsagro.com.br"
+              },
+              {
+                "id": "968b05dc-f476-4e13-8166-e62005d0f936",
+                "name": "CC",
+                "type": "string",
+                "value": "leonardo.alves@gcsagro.com.br"
+              },
+              {
+                "id": "570663c5-29c0-44fb-9992-908b7cca8136",
+                "name": "BCC",
+                "type": "string",
+                "value": ""
+              },
+              {
+                "id": "e1342977-8b5e-444a-823a-c8dccb8366dd",
+                "name": "TEL1",
+                "value": "556198313777@c.us",
+                "type": "string"
+              },
+              {
+                "id": "8e52e99d-8fe8-4eee-a91b-86b8cb638691",
+                "name": "TEL2",
+                "value": "556193716080@c.us",
+                "type": "string"
+              },
+              {
+                "id": "9f58cc93-fa32-42db-b49e-5bd3ef0d3110",
+                "name": "TEL3",
+                "value": "556132467905@c.us",
+                "type": "string"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "id": "ca1958f5-8470-46d1-9467-a2e33bdcb672",
+        "name": "Seta Email E Telefone",
+        "type": "n8n-nodes-base.set",
+        "position": [
+          -1488,
+          224
+        ],
+        "typeVersion": 3.4
+      },
+      {
+        "parameters": {},
+        "type": "n8n-nodes-base.noOp",
+        "typeVersion": 1,
+        "position": [
+          -1072,
+          416
+        ],
+        "id": "0d4ac423-89ba-469b-8ad4-4a7e2fdcdc73",
+        "name": "Email"
+      },
+      {
+        "parameters": {},
+        "type": "n8n-nodes-base.noOp",
+        "typeVersion": 1,
+        "position": [
+          -1072,
+          576
+        ],
+        "id": "31e5ee28-11e7-4bf8-9e4d-6cbebf844a5e",
+        "name": "Telefone1"
+      },
+      {
+        "parameters": {},
+        "type": "n8n-nodes-base.noOp",
+        "name": "Telefone2",
+        "typeVersion": 1,
+        "position": [
+          -1072,
+          736
+        ],
+        "id": "9e2dd244-19b9-44cb-a340-fddf9b386944"
+      },
+      {
+        "parameters": {
+          "requestMethod": "POST",
+          "url": "http://192.168.0.204:3202/responder-avisos",
+          "responseFormat": "string",
+          "options": {},
+          "bodyParametersUi": {
+            "parameter": [
+              {
+                "name": "to",
+                "value": "={{ $('Seta Email E Telefone').item.json.TEL1 }}"
+              },
+              {
+                "name": "message",
+                "value": "={{ $json.whatsapp_message }}"
+              }
+            ]
+          }
+        },
+        "id": "aa03662e-a83b-4c75-a43f-d3e89e9eedfb",
+        "name": "Envia Whats Telefone 1",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 1,
+        "position": [
+          -816,
+          576
+        ],
+        "retryOnFail": true,
+        "maxTries": 5,
+        "onError": "continueRegularOutput"
+      },
+      {
+        "parameters": {
+          "requestMethod": "POST",
+          "url": "http://192.168.0.204:3202/responder-avisos",
+          "responseFormat": "string",
+          "options": {},
+          "bodyParametersUi": {
+            "parameter": [
+              {
+                "name": "to",
+                "value": "={{ $('Seta Email E Telefone').item.json.TEL2 }}"
+              },
+              {
+                "name": "message",
+                "value": "={{ $json.whatsapp_message }}"
+              }
+            ]
+          }
+        },
+        "id": "9149b59c-46d6-4940-a34d-7318967cfaed",
+        "name": "Envia Whats Telefone2",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 1,
+        "position": [
+          -816,
+          736
+        ],
+        "retryOnFail": true,
+        "maxTries": 5,
+        "onError": "continueRegularOutput"
+      },
+      {
+        "parameters": {
+          "jsCode": "// ===========================================\n// Filtro de Deduplica\u00e7\u00e3o (Smart Debounce)\n// ===========================================\n\nconst itemsToProcess = [];\nconst WINDOW_MS = 10 * 60 * 1000; // 10 minutos\n\nlet lastErrors = {};\nlet useStatic = false;\nlet staticDataReference;\n\ntry {\n    // Tenta acessar dados est\u00e1ticos globais usando a sintaxe Nova ($)\n    staticDataReference = $getWorkflowStaticData('global');\n    lastErrors = staticDataReference.lastErrors || {};\n    useStatic = true;\n} catch (e) {\n    try {\n        // Fallback para sintaxe antiga (sem $)\n        staticDataReference = getWorkflowStaticData('global');\n        lastErrors = staticDataReference.lastErrors || {};\n        useStatic = true;\n    } catch (e2) {\n         console.log(\"Aviso: Static Data indispon\u00edvel. Debounce desativado.\");\n    }\n}\n\nconst now = Date.now();\n\nfor (const item of items) {\n  const err = item.json;\n  \n  // Chave \u00danica\n  const key = `${err.workflowId}:${err.nodeName}`; // Fix: Key only by Node, ignoring dynamic error message\n  \n  const lastSeen = lastErrors[key] || 0;\n\n  if (now - lastSeen > WINDOW_MS) {\n    // Processar este item\n    itemsToProcess.push(item);\n    \n    // Atualiza tabela local\n    lastErrors[key] = now;\n  }\n}\n\n// Persistir se poss\u00edvel\nif (useStatic && staticDataReference) {\n    // Limpeza\n    const cleanErrors = {};\n    for (const k in lastErrors) {\n      if (Date.now() - lastErrors[k] < WINDOW_MS) {\n        cleanErrors[k] = lastErrors[k];\n      }\n    }\n    staticDataReference.lastErrors = cleanErrors;\n}\n\nreturn itemsToProcess;\n"
+        },
+        "id": "04762865-5162-483f-9558-101e5c7312bb",
+        "name": "Filtro de Deduplicacao",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          -2368,
+          656
+        ]
+      },
+      {
+        "parameters": {},
+        "id": "26b4d2a3-9cc7-4a7d-9633-6aa96b1f4248",
+        "name": "Telefone3",
+        "type": "n8n-nodes-base.noOp",
+        "typeVersion": 1,
+        "position": [
+          -1072,
+          896
+        ]
+      },
+      {
+        "parameters": {
+          "requestMethod": "POST",
+          "url": "http://192.168.0.204:3202/responder-avisos",
+          "responseFormat": "string",
+          "options": {},
+          "bodyParametersUi": {
+            "parameter": [
+              {
+                "name": "to",
+                "value": "={{ $('Seta Email E Telefone').item.json.TEL3 }}"
+              },
+              {
+                "name": "message",
+                "value": "={{ $json.whatsapp_message }}"
+              }
+            ]
+          }
+        },
+        "id": "2719ac6f-753e-4e6e-a988-1fa4ef2a9208",
+        "name": "Envia Whats Telefone 3",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 1,
+        "position": [
+          -816,
+          896
+        ],
+        "retryOnFail": true,
+        "maxTries": 5,
+        "onError": "continueRegularOutput"
+      },
+      {
+        "parameters": {
+          "operation": "executeQuery",
+          "query": "\nIF NOT EXISTS (SELECT * FROM sysobjects WHERE name='TB_N8N_ERROR_LOG' and xtype='U')\nBEGIN\n    CREATE TABLE TB_N8N_ERROR_LOG (\n        ID INT IDENTITY(1,1) PRIMARY KEY,\n        WORKFLOW_NAME NVARCHAR(255),\n        WORKFLOW_ID NVARCHAR(50),\n        EXECUTION_ID NVARCHAR(50),\n        NODE_NAME NVARCHAR(255),\n        ERROR_MESSAGE NVARCHAR(MAX),\n        DIAGNOSIS NVARCHAR(MAX),\n        CAUSE NVARCHAR(MAX),\n        RESOLUTION NVARCHAR(MAX),\n        CREATED_AT DATETIME DEFAULT GETDATE()\n    );\nEND\n\nINSERT INTO TB_N8N_ERROR_LOG (\n    WORKFLOW_NAME, WORKFLOW_ID, EXECUTION_ID, NODE_NAME, \n    ERROR_MESSAGE, DIAGNOSIS, CAUSE, RESOLUTION\n) VALUES (\n    '{{ ($('Extrai Erros').item.json.workflowName || '').replace(/'/g, \"''\") }}', \n    '{{ ($('Extrai Erros').item.json.workflowId || '').replace(/'/g, \"''\") }}', \n    '{{ ($('Extrai Erros').item.json.executionId || '').replace(/'/g, \"''\") }}', \n    '{{ ($('Extrai Erros').item.json.nodeName || '').replace(/'/g, \"''\") }}', \n    '{{ ($('Extrai Erros').item.json.errorMessage || '').replace(/'/g, \"''\") }}', \n    '{{ ($json.output.diagnostico || '').replace(/'/g, \"''\") }}', \n    '{{ ($json.output.causa || '').replace(/'/g, \"''\") }}', \n    '{{ ($json.output.solucao || '').replace(/'/g, \"''\") }}'\n);\n"
+        },
+        "id": "28e47996-41e3-4d58-90a0-c8e6535f6089",
+        "name": "Grava Log SQL",
+        "type": "n8n-nodes-base.microsoftSql",
+        "typeVersion": 1,
+        "position": [
+          -1680,
+          880
+        ],
+        "credentials": {
+          "microsoftSql": {
+            "id": "nENXwCqIDPtcL8m7",
+            "name": "Microsoft SQL account"
+          }
+        },
+        "onError": "continueRegularOutput"
+      },
+      {
+        "parameters": {
+          "jsCode": "// Tenta recuperar dados do usuario do contexto global\nconst userPhone = $execution.customData?.userPhone;\nconst userName = $execution.customData?.userName || 'Usu\u00e1rio';\n\nreturn {\n    json: {\n        userPhone,\n        userName,\n        hasUser: !!userPhone\n    }\n};"
+        },
+        "id": "964e90ce-fc20-48a1-9e16-1deeeba7c4c7",
+        "name": "Extrai Contexto",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          -200,
+          1200
+        ]
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict",
+              "version": 2
+            },
+            "conditions": [
+              {
+                "id": "c94078e9-a4a1-487c-8c92-6ed8cbc85c3f",
+                "leftValue": "={{ $json.hasUser }}",
+                "rightValue": true,
+                "operator": {
+                  "type": "boolean",
+                  "operation": "true",
+                  "singleValue": true
+                }
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {}
+        },
+        "id": "12dd5132-2004-4eb8-8d5b-36b418964e76",
+        "name": "Tem Usuario?",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.2,
+        "position": [
+          40,
+          1200
+        ]
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "https://graph.facebook.com/v24.0/919320734605969/messages",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpHeaderAuth",
+          "sendBody": true,
+          "specifyBody": "json",
+          "jsonBody": "={{\n{\n  \"messaging_product\": \"whatsapp\",\n  \"recipient_type\": \"individual\",\n  \"to\": $json.userPhone,\n  \"type\": \"text\",\n  \"text\": {\n    \"body\": \"\ud83e\udd16 *Assistente Virtual*\\n\\nOcorreu um erro interno ao processar sua solicita\u00e7\u00e3o. Nossos engenheiros foram notificados. \ud83d\udc77\\n\\nPor favor, tente novamente em alguns instantes.\"\n  }\n}\n}}",
+          "options": {}
+        },
+        "id": "bee8c7cc-bfbe-43c7-937b-b2baca1ac579",
+        "name": "Avisa Usuario",
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.3,
+        "position": [
+          280,
+          1200
+        ],
+        "credentials": {
+          "httpHeaderAuth": {
+            "id": "MqwiYsaydDm9I38O",
+            "name": "Meta WhatsApp Cloud API"
+          }
+        }
+      }
+    ],
+    "connections": {
+      "Remove Manual Exec": {
+        "main": [
+          [
+            {
+              "node": "Extrai Erros",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Extrai Erros": {
+        "main": [
+          [
+            {
+              "node": "Filtro de Deduplicacao",
+              "type": "main",
+              "index": 0
+            },
+            {
+              "node": "Extrai Contexto",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Agente de Erros": {
+        "main": [
+          [
+            {
+              "node": "Seta Diagnosticos",
+              "type": "main",
+              "index": 0
+            },
+            {
+              "node": "Grava Log SQL",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Acionador de Erro": {
+        "main": [
+          [
+            {
+              "node": "Trata Horario",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Seta Diagnosticos": {
+        "main": [
+          [
+            {
+              "node": "Gera Email",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Gera Email": {
+        "main": [
+          [
+            {
+              "node": "Email",
+              "type": "main",
+              "index": 0
+            },
+            {
+              "node": "Telefone1",
+              "type": "main",
+              "index": 0
+            },
+            {
+              "node": "Telefone2",
+              "type": "main",
+              "index": 0
+            },
+            {
+              "node": "Telefone3",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Estrutura": {
+        "ai_outputParser": [
+          [
+            {
+              "node": "Agente de Erros",
+              "type": "ai_outputParser",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Trata Horario": {
+        "main": [
+          [
+            {
+              "node": "Dentro do Horario",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Dentro do Horario": {
+        "main": [
+          [
+            {
+              "node": "Seta Email E Telefone",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Modelo 4.1Mini": {
+        "ai_languageModel": [
+          [
+            {
+              "node": "Agente de Erros",
+              "type": "ai_languageModel",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Seta Email E Telefone": {
+        "main": [
+          [
+            {
+              "node": "Remove Manual Exec",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Email": {
+        "main": [
+          [
+            {
+              "node": "Envia Email",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Telefone1": {
+        "main": [
+          [
+            {
+              "node": "Envia Whats Telefone 1",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Telefone2": {
+        "main": [
+          [
+            {
+              "node": "Envia Whats Telefone2",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Filtro de Deduplicacao": {
+        "main": [
+          [
+            {
+              "node": "Agente de Erros",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Telefone3": {
+        "main": [
+          [
+            {
+              "node": "Envia Whats Telefone 3",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Extrai Contexto": {
+        "main": [
+          [
+            {
+              "node": "Tem Usuario?",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Tem Usuario?": {
+        "main": [
+          [
+            {
+              "node": "Avisa Usuario",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "authors": "Ti GCS",
+    "name": null,
+    "description": null,
+    "autosaved": false,
+    "workflowPublishHistory": [
+      {
+        "createdAt": "2026-02-06T18:14:05.368Z",
+        "id": 481,
+        "workflowId": "BNt9cLp1IJvpBdyg",
+        "versionId": "e18b56f0-9e32-4195-9859-2992a4ecd34c",
+        "event": "activated",
+        "userId": "ce465cd5-d65e-4c22-bca0-647a3d53e5a7"
+      }
+    ]
+  }
+}
