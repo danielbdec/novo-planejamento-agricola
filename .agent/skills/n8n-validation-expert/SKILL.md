@@ -33,6 +33,11 @@ Validation is typically iterative:
 - `type_mismatch` - Wrong data type (string instead of number)
 - `invalid_reference` - Referenced node doesn't exist
 - `invalid_expression` - Expression syntax error
+- `UNKNOWN_CONNECTION_KEY` - Invalid connection key (e.g., `"0"` instead of `"main"`)
+- `INVALID_CONNECTION_TYPE` - Invalid `type` value in connection target
+- `OUTPUT_INDEX_OUT_OF_BOUNDS` - Connection uses output index beyond node capacity
+- `INPUT_INDEX_OUT_OF_BOUNDS` - Connection uses input index beyond node capacity
+- `CONDITIONAL_BRANCH_FANOUT` - All IF/Filter/Switch targets on same output branch
 
 **Example**:
 ```json
@@ -372,7 +377,22 @@ References to non-existent nodes
 
 **Solution**: Add missing connections or remove extra rules
 
-#### 3. Paradoxical Corrupt States
+#### 3. Conditional Branch Fan-out
+All IF/Filter/Switch targets crammed into `main[0]` instead of proper branch routing
+
+**Solution**: Use `branch` parameter in `addConnection` operations:
+```javascript
+// IF node: route to correct branches
+{type: "addConnection", source: "IF", target: "Success", branch: "true"}
+{type: "addConnection", source: "IF", target: "Fallback", branch: "false"}
+```
+
+#### 4. Malformed Connection Keys/Types
+Using `"0"` or `"output"` instead of `"main"` as connection key
+
+**Solution**: Fix connection keys to use valid types (`main`, `error`, `ai_tool`)
+
+#### 5. Paradoxical Corrupt States
 API returns corrupt data but rejects updates
 
 **Solution**: May require manual database intervention
@@ -519,9 +539,11 @@ result.warnings.forEach(warning => {
 
 **Checks**:
 1. **Node configurations** - Each node valid
-2. **Connections** - No broken references
+2. **Connections** - No broken references, valid keys/types/indices
 3. **Expressions** - Syntax and references valid
 4. **Flow** - Logical workflow structure
+5. **Trigger reachability** - BFS from triggers detects unreachable subgraphs
+6. **Conditional branch usage** - IF/Filter/Switch output routing correctness
 
 **Example**:
 ```javascript
@@ -576,6 +598,66 @@ validate_workflow({
 ```
 
 **Fix**: Connect node or remove if unused
+
+#### 5. Unknown Connection Key (NEW v2.36.0)
+```json
+{
+  "type": "UNKNOWN_CONNECTION_KEY",
+  "message": "Unknown output key '0' on node 'HTTP Request'. Did you mean 'main'?"
+}
+```
+
+**Fix**: Use valid connection keys (`main`, `error`, `ai_tool`, etc.) instead of numeric strings
+
+#### 6. Invalid Connection Type (NEW v2.36.0)
+```json
+{
+  "type": "INVALID_CONNECTION_TYPE",
+  "message": "Invalid type '0' in connection target. Should be 'main'"
+}
+```
+
+**Fix**: Set connection target `type` field to `"main"` (not numeric strings)
+
+#### 7. Output Index Out of Bounds (NEW v2.36.0)
+```json
+{
+  "type": "OUTPUT_INDEX_OUT_OF_BOUNDS",
+  "message": "Output index 3 exceeds node capacity (max 1)"
+}
+```
+
+**Fix**: Use valid output index. Aware of `onError: 'continueErrorOutput'`, Switch rules, and IF/Filter nodes
+
+#### 8. Input Index Out of Bounds (NEW v2.36.0)
+```json
+{
+  "type": "INPUT_INDEX_OUT_OF_BOUNDS",
+  "message": "Input index 2 exceeds node capacity (max 1)"
+}
+```
+
+**Fix**: Use valid input index (Merge=2 inputs, triggers=0, others=1)
+
+#### 9. Conditional Branch Fan-out (NEW v2.36.1)
+```json
+{
+  "type": "CONDITIONAL_BRANCH_FANOUT",
+  "message": "IF node has all connections on main[0] - true/false targets not properly routed"
+}
+```
+
+**Fix**: Route connections to correct output branches:
+- **IF node**: Use `branch: "true"` / `branch: "false"` in `addConnection`
+- **Filter node**: Use `branch: "true"` (matched) / `branch: "false"` (unmatched)
+- **Switch node**: Use `case: 0`, `case: 1`, etc. for each output
+
+> **Note**: Skips warning for single connections (intentional true-only usage) and when higher outputs also have connections (legitimate fan-out)
+
+#### 10. Unreachable Subgraph (NEW v2.36.0)
+BFS-based trigger reachability analysis replaces simple orphan detection. Flags entire unreachable subgraphs, not just individual nodes.
+
+**Fix**: Connect subgraph to a trigger path or remove unused nodes
 
 ---
 
@@ -676,6 +758,8 @@ For comprehensive error catalogs and false positive examples:
 4. **Use runtime profile** for balanced validation
 5. **False positives exist** - learn to recognize them
 6. **Read error messages** - they contain fix guidance
+7. **Connection validation** (v2.36.0) - catches malformed keys, invalid types, index bounds
+8. **Fan-out detection** (v2.36.1) - warns when IF/Filter/Switch outputs are misconfigured
 
 **Validation Process**:
 1. Validate → Read errors → Fix → Validate again

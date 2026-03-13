@@ -126,6 +126,11 @@ Choose based on your stage:
 - `missing_required` - Must fix
 - `invalid_value` - Must fix
 - `type_mismatch` - Must fix
+- `UNKNOWN_CONNECTION_KEY` - Invalid connection key (use `main`, not `"0"`)
+- `INVALID_CONNECTION_TYPE` - Invalid `type` in connection target
+- `OUTPUT_INDEX_OUT_OF_BOUNDS` - Output index exceeds node capacity
+- `INPUT_INDEX_OUT_OF_BOUNDS` - Input index exceeds node capacity
+- `CONDITIONAL_BRANCH_FANOUT` - IF/Filter/Switch targets on wrong branch
 - `best_practice` - Should fix (warning)
 - `suggestion` - Optional improvement
 
@@ -155,10 +160,12 @@ validate_workflow({
 
 **Validates**:
 - Node configurations
-- Connection validity (no broken references)
+- Connection validity (keys, types, index bounds, broken references)
 - Expression syntax ({{ }} patterns)
 - Workflow structure (triggers, flow)
 - AI connections (8 types)
+- Trigger reachability (BFS-based, flags unreachable subgraphs)
+- Conditional branch routing (IF/Filter/Switch fan-out detection)
 
 **Returns**: Comprehensive validation report with errors, warnings, suggestions
 
@@ -237,6 +244,8 @@ const result2 = validate_node({
 **What it CANNOT fix**:
 - Broken connections (references to non-existent nodes)
 - Branch count mismatches (3 Switch rules but only 2 outputs)
+- Conditional branch fan-out (use `branch` param in `addConnection` to fix)
+- Malformed connection keys/types (fix keys to `main`/`error`/`ai_tool`)
 - Paradoxical corrupt states (API returns corrupt, rejects updates)
 
 **Example**:
@@ -341,6 +350,7 @@ Some validation warnings may be acceptable:
 - Optional best practices
 - Node-specific edge cases
 - Profile-dependent issues
+- `CONDITIONAL_BRANCH_FANOUT` when single connection is intentional (e.g., true-only IF routing)
 
 Use **ai-friendly** profile to reduce false positives.
 
@@ -429,6 +439,8 @@ n8n_autofix_workflow({
 4. Binary operators ≠ singleValue, Unary operators = singleValue: true
 5. Iterate until validation passes
 6. Use `n8n_autofix_workflow` for automatic fixes
+7. Connection validation catches malformed keys, types, and index bounds (v2.36.0)
+8. Fan-out detection warns when IF/Filter/Switch outputs are misconfigured (v2.36.1)
 
 **Tool Selection**:
 - **validate_node({mode: "minimal"})**: Quick required fields check
